@@ -49,21 +49,23 @@ double *equilibrium(VelocitySet &set, Node node)
         speedSquared += node_velocity[dim] * node_velocity[dim];
     speedSquared /= (2 * speedOfSoundSquared);
 
-    double *equilibrium = new double[nDimensions];
+    double *equilibrium = new double[nDirections];
     for (size_t dir = 0; dir < nDirections; ++dir)
     {
         double cu = 0;
         for (size_t dim = 0; dim < nDimensions; ++dim)
-            cu = set.directions[dir][dim] * node_velocity[dir];
+            cu = set.directions[dir][dim] * node_velocity[dim];
         cu /= speedOfSoundSquared;
 
         equilibrium[dir] = node_density * set.weights[dir] * (
-            1 +
+            1.0 +
             cu +
-            cu * cu / 2 -
+            0.5 * cu * cu -
             speedSquared
         );
     }
+
+    delete[] node_velocity;
 
     return equilibrium;
 }
@@ -98,7 +100,6 @@ void report(VelocitySet &set, Node *nodes, size_t totalNodes)
         delete[] node_velocity;
     }
 
-
     std::cout << "Total velocity: ";
     for (size_t dim = 0; dim < nDimensions; ++dim)
         std::cout << total_velocity[dim] << '\t';
@@ -110,11 +111,23 @@ void report(VelocitySet &set, Node *nodes, size_t totalNodes)
 void collideNode(VelocitySet &set, Node &node)
 {
     double * node_equilibrium = equilibrium(set, node);
+    size_t nDirections = set.nDirections;
 
+    // TODO: make dependent on either velocity set, or domain problem
+    size_t relaxation = 1;
+
+    for (size_t dir = 0; dir < nDirections; ++dir)
+        node.distributions[dir].value = node.distributions[dir].value -
+            (node.distributions[dir].value - node_equilibrium[dir]) / relaxation;
+
+    delete[] node_equilibrium;
 }
 
 void collision(VelocitySet &set, Node *nodes, size_t totalNodes)
 {
+    for (size_t idx = 0; idx < totalNodes; ++idx)
+        collideNode(set, nodes[idx]);
+
     // for (size_t idx = 0; idx < totalNodes; ++idx)
     // {
     //     var equilibrium = this.getEquilibrium();
@@ -134,7 +147,14 @@ void collision(VelocitySet &set, Node *nodes, size_t totalNodes)
 
 void stream(VelocitySet &set, Node *nodes, size_t totalNodes)
 {
+    size_t nDirections = set.nDirections;
 
+    // Stream each distribution to the neighbouring nodes
+    // since neighbour is a pointer to a boolean we only have to assign a new value
+    // to the neighbour
+    for (size_t idx = 0; idx < totalNodes; ++idx)
+        for (size_t dir = 0; dir < nDirections; ++dir)
+            *nodes[idx].distributions[dir].neighbour = nodes[idx].distributions[dir].value;
 }
 
 /*size_t neighbourIdxForDistribution(size_t nodeIdx, size_t distributionIdx, VelocitySet &set)
@@ -161,14 +181,27 @@ void initializeNodeAt(VelocitySet &set, Node *nodes, size_t x, size_t y, size_t 
     Distribution *distributions = new Distribution[nDirections];
     for (size_t dir = 0; dir < nDirections; ++dir)
     {
-        distributions[dir].value = set.weights[dir];
+        distributions[dir].value     = set.weights[dir];
+        distributions[dir].nextValue = set.weights[dir];
+    }
+    nodes[idx].distributions = distributions;
+}
+
+void connectNodeToNeighbours(VelocitySet &set, Node *nodes, size_t x, size_t y, size_t dx, size_t dy)
+{
+    if (set.nDimensions != 2)
+        throw "Dimensie van velocity set is niet 2";
+    size_t idx = x * dx + y;
+    size_t nDirections = set.nDirections;
+
+    for (size_t dir = 0; dir < nDirections; ++dir)
+    {
         // periodic boundary
         size_t neighbour_x = x + set.directions[dir][0];
         size_t neighbour_y = y + set.directions[dir][1];
         size_t neighbour_idx = (neighbour_x % dx) * dx + (neighbour_y % dy);
-        distributions[dir].neighbour = &nodes[neighbour_idx].distributions[dir].value;
+        nodes[idx].distributions[dir].neighbour = &nodes[neighbour_idx].distributions[dir].nextValue;
     }
-    nodes[idx].distributions = distributions;
 }
 
 Node *initialize(VelocitySet &set, size_t &totalNodes)
@@ -176,8 +209,8 @@ Node *initialize(VelocitySet &set, size_t &totalNodes)
     // Initialize the velocity set (note: should be available to all processors)
     initializeVelocitySet(set);
 
-    size_t dx = 10;
-    size_t dy = 10;
+    size_t dx = 3;
+    size_t dy = 3;
 
     totalNodes = dx * dy;
     Node *nodes = new Node[totalNodes];
@@ -185,6 +218,10 @@ Node *initialize(VelocitySet &set, size_t &totalNodes)
     for (size_t x = 0; x < dx; ++x)
         for (size_t y = 0; y < dy; ++y)
             initializeNodeAt(set, nodes, x, y, dx, dy);
+
+    for (size_t x = 0; x < dx; ++x)
+        for (size_t y = 0; y < dy; ++y)
+            connectNodeToNeighbours(set, nodes, x, y, dx, dy);
 
     return nodes;
 }

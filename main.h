@@ -28,12 +28,13 @@ struct VelocitySet
     int **directions;
     size_t nDirections;
     size_t nDimensions;
-    size_t speedOfSoundSquared;
+    double speedOfSoundSquared;
 };
 
 struct Distribution
 {
     double value;
+    double nextValue;
     double * neighbour; // stream_destination , should point to Distribution.value
 };
 
