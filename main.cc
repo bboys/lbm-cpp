@@ -156,18 +156,30 @@ Node *init(VelocitySet &velocitySet, size_t &totalNodes)
 
     totalNodes = dx * dy;
     Node *nodes = new Node[totalNodes];
-    for (size_t i = 0; i < totalNodes; ++i)
+    for (size_t x = 0; x < dx; ++x)
     {
-        nodes[i].type = Cell;
-
-        Distribution *distributions = new Distribution[nDirections];
-        for (size_t j = 0; j < nDirections; ++j)
+        for (size_t y = 0; y < dy; ++y)
         {
-            distributions[j].value = velocitySet.weights[j];
-            distributions[j].neighbour = &nodes[i % 5].distributions[j].value;
+            size_t idx = x * dx + y;
+            nodes[idx].type = Cell;
+
+            Distribution *distributions = new Distribution[nDirections];
+            for (size_t dir = 0; dir < nDirections; ++dir)
+            {
+                distributions[dir].value = velocitySet.weights[dir];
+                // periodic boundary
+                size_t neighbour_x = x + velocitySet.directions[dir][0];
+                size_t neighbour_y = y + velocitySet.directions[dir][1];
+                size_t neighbour_idx = (neighbour_x % dx) * dx + (neighbour_y % dy);
+                distributions[dir].neighbour = &nodes[neighbour_idx].distributions[dir].value;
+            }
+            nodes[idx].distributions = distributions;
         }
-        nodes[i].distributions = distributions;
     }
+
+    // for (size_t i = 0; i < totalNodes; ++i)
+    // {
+    // }
 
     std::cout << "Done" << '\n';
 
