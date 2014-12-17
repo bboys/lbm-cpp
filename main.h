@@ -28,6 +28,7 @@ struct VelocitySet
     int **directions;
     size_t nDirections;
     size_t nDimensions;
+    size_t speedOfSoundSquared;
 };
 
 struct Distribution

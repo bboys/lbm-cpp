@@ -34,9 +34,11 @@ void initializeVelocitySet(VelocitySet & D2Q9)
     D2Q9.directions = directions;
     D2Q9.nDimensions = dimensions;
     D2Q9.nDirections = nDirections;
+    D2Q9.speedOfSoundSquared = 1.0 / 3.0;
 
     std::cout << "This velocity set has " << D2Q9.nDimensions << " dimensions and "
-            << D2Q9.nDirections << " directions." << '\n';
+            << D2Q9.nDirections << " directions and speed of sound squared: "
+            << D2Q9.speedOfSoundSquared << "." << '\n';
 
     for (size_t i = 0; i < nDirections; ++i)
         std::cout << D2Q9.weights[i] << ',' << D2Q9.directions[i][0] << ',' << D2Q9.directions[i][1] << '\n';
