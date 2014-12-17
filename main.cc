@@ -1,5 +1,72 @@
 #include "main.h"
 
+double density(VelocitySet set, Node node)
+{
+    double density = 0;
+    for (size_t i = 0; i < set.nDimensions; ++i)
+        density += node.distributions[i].value;
+
+    return density;
+}
+
+double *velocity(VelocitySet set, Node node)
+{
+    size_t nDirections = set.nDirections;
+    size_t nDimensions = set.nDimensions;
+    double nodeDensity = density(set, node);
+    // bleh, lelijk
+    double *velocity = new double[nDimensions];
+    for (size_t dim = 0; dim < nDimensions; ++dim)
+        velocity[dim] = 0;
+
+    // compute the velocity in each dimension taking in account
+    // the form of our velocity set
+    for (size_t dir = 0; dir < nDirections; ++dir)
+        for (size_t dim = 0; dim < nDimensions; ++dim)
+            velocity[dim] += node.distributions[dir].value
+                 * set.weights[dir] * set.directions[dir][dim];
+
+    for (size_t dim = 0; dim < nDimensions; ++dim)
+        velocity[dim] /= nodeDensity;
+
+    std::cout << '\n';
+    return velocity;
+}
+
+double *equilibrium(VelocitySet set, Node node)
+{
+    size_t nDirections = set.nDirections;
+    size_t nDimensions = set.nDimensions;
+    double speedOfSoundSquared = set.speedOfSoundSquared;
+    double node_density = density(set, node);
+    double *node_velocity = velocity(set, node);
+    // double *distributions = node.distributions;
+
+    // Pre calculate
+    double speedSquared = 0;
+    for (size_t dim = 0; dim < nDimensions; ++dim)
+        speedSquared += node_velocity[dim] * node_velocity[dim];
+    speedSquared /= (2 * speedOfSoundSquared);
+
+    double *equilibrium = new double[nDimensions];
+    for (size_t dir = 0; dir < nDirections; ++dir)
+    {
+        double cu = 0;
+        for (size_t dim = 0; dim < nDimensions; ++dim)
+            cu = set.directions[dir][dim] * node_velocity[dir];
+        cu /= speedOfSoundSquared;
+
+        equilibrium[dir] = node_density * set.weights[dir] * (
+            1 +
+            cu +
+            cu * cu / 2 -
+            speedSquared
+        );
+    }
+
+    return equilibrium;
+}
+
 bool isOnBoundary(size_t x, size_t y, size_t z)
 {
     if (x == 0 && y == 0) {
@@ -8,13 +75,60 @@ bool isOnBoundary(size_t x, size_t y, size_t z)
     return false;
 }
 
-
-void collision()
+void report(VelocitySet set, Node *nodes, size_t totalNodes)
 {
+    std::cout << "Did some iterations" << '\n';
 
+    double total_density = 0;
+
+    for (size_t idx = 0; idx < totalNodes; ++idx)
+        total_density += density(set, nodes[idx]);
+
+    std::cout << "Total density: " << total_density << '\n';
+
+    size_t nDimensions = set.nDimensions;
+    double *total_velocity = new double[nDimensions];
+    for (size_t dim = 0; dim < nDimensions; ++dim)
+        total_velocity[dim] = 0;
+
+    for (size_t idx = 0; idx < totalNodes; ++idx)
+    {
+        double *node_velocity = velocity(set, nodes[idx]);
+        for (size_t dim = 0; dim < nDimensions; ++dim)
+            total_velocity[dim] += node_velocity[dim];
+
+        delete[] node_velocity;
+    }
+
+
+    std::cout << "Total velocity: ";
+    for (size_t dim = 0; dim < nDimensions; ++dim)
+        std::cout << total_velocity[dim] << '\t';
+    std::cout << '\n';
+
+    delete[] total_velocity;
 }
 
-void stream()
+void collision(VelocitySet set, Node *nodes, size_t totalNodes)
+{
+    // for (size_t idx = 0; idx < totalNodes; ++idx)
+    // {
+    //     var equilibrium = this.getEquilibrium();
+    //         var velocitySet = Config.get('velocity-set');
+    //         // var force = 10;
+    //         for (var k = 0; k < this.distributions.length; k++) {
+    //                 this.distributions[k] = this.distributions[k] -
+    //                     (this.distributions[k] - equilibrium[k]) / relaxationTime;
+    //                      // + 3 * velocitySet[k].dy * velocitySet[k].w * force;
+
+    //             if (this.distributions[k] < 0) {
+    //                 // console.log("Distribution is negative!", this.distributions[k]);
+    //             }
+    //         };
+    // }
+}
+
+void stream(VelocitySet set, Node *nodes, size_t totalNodes)
 {
 
 }
@@ -62,31 +176,23 @@ Node *init(VelocitySet &velocitySet, size_t &totalNodes)
 
 int main(int argc, char **argv)
 {
-    // A 2d lattice boltzmann simulation
     VelocitySet VSet;
     Node *nodes;
-    size_t totalNodes = 0;
-    nodes = init(VSet, totalNodes);
+    size_t totalNodes = 0;    nodes = init(VSet, totalNodes);
 
-    size_t dimensions = VSet.nDimensions;
-    std::cout << "Hoi" << '\n';
-    // for (int i = 0; i < totalNodes; ++i)
-    // {
-    //     std::cout << nodes[i].type << '\t';
-    //     std::cout << nodes[i].distributions[0].value << '\n';
-    // }
 
     size_t iterations = 1000;
     for (size_t iter = 0; iter < iterations; ++iter)
     {
-        collision();
-        stream();
+        collision(VSet, nodes, totalNodes);
+        stream(VSet, nodes, totalNodes);
 
-        // if (iter % 100 == 0)
-        //     report();
+        if (iter % 1000 == 0)
+            report(VSet, nodes, totalNodes);
     }
 
     // Free up the memory taken by our velocity set
+    size_t dimensions = VSet.nDimensions;
     delete[] VSet.weights;
     for (size_t i = 0; i < dimensions; ++i)
         delete[] VSet.directions[i];
