@@ -170,13 +170,12 @@ void stream(VelocitySet &set, Node *nodes, size_t totalNodes)
     // if other boundary, do other things, maybe this should be replaced with a set neighbours method?
 }*/
 
-void initializeNodeAt(VelocitySet &set, Node *nodes, size_t x, size_t y, size_t dx, size_t dy)
+void initializeNodeAt(VelocitySet &set, Node &node)
 {
     if (set.nDimensions != 2)
         throw "Dimensie van velocity set is niet 2";
-    size_t idx = x * dx + y;
     size_t nDirections = set.nDirections;
-    nodes[idx].type = Cell;
+    node.type = Cell;
 
     Distribution *distributions = new Distribution[nDirections];
     for (size_t dir = 0; dir < nDirections; ++dir)
@@ -184,7 +183,7 @@ void initializeNodeAt(VelocitySet &set, Node *nodes, size_t x, size_t y, size_t 
         distributions[dir].value     = set.weights[dir];
         distributions[dir].nextValue = set.weights[dir];
     }
-    nodes[idx].distributions = distributions;
+    node.distributions = distributions;
 }
 
 void connectNodeToNeighbours(VelocitySet &set, Node *nodes, size_t x, size_t y, size_t dx, size_t dy)
@@ -217,7 +216,7 @@ Node *initialize(VelocitySet &set, size_t &totalNodes)
 
     for (size_t x = 0; x < dx; ++x)
         for (size_t y = 0; y < dy; ++y)
-            initializeNodeAt(set, nodes, x, y, dx, dy);
+            initializeNodeAt(set, nodes[x * dx + y]);
 
     for (size_t x = 0; x < dx; ++x)
         for (size_t y = 0; y < dy; ++y)
