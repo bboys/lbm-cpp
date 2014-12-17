@@ -60,7 +60,7 @@ void stream()
 
 }
 
-void initializeVelocitySet(VelocitySet & D2Q9)
+void initializeVelocitySet(VelocitySet & D2Q9, size_t &dimensions)
 {
     double *weights = new double[9];
     weights[0] = 4.0 / 9;
@@ -73,7 +73,7 @@ void initializeVelocitySet(VelocitySet & D2Q9)
     weights[7] = 1.0 / 36;
     weights[8] = 1.0 / 36;
 
-    size_t dimensions = 2;
+    dimensions = 2;
     size_t nDirections = 9;
     int **directions = new int*[nDirections];
     for(size_t i = 0; i < nDirections; ++i)
@@ -100,10 +100,10 @@ void initializeVelocitySet(VelocitySet & D2Q9)
 
 }
 
-Node *init(VelocitySet &velocitySet, size_t &totalNodes)
+Node *init(VelocitySet &velocitySet, size_t &dimensions, size_t &totalNodes)
 {
     // Initialize the velocity set (note: should be available to all processors)
-    initializeVelocitySet(velocitySet);
+    initializeVelocitySet(velocitySet, dimensions);
     size_t dx = 10;
     size_t dy = 10;
 
@@ -125,43 +125,6 @@ Node *init(VelocitySet &velocitySet, size_t &totalNodes)
     std::cout << "Done" << '\n';
 
     return nodes;
-    //size_t dz = 10;
-
-    // Node *nodes = new Node[dx * dy * dz];
-
-    // initialDistributions = new Distribution[9];
-    // initialDistributions[0].value = 4 / 9;
-    // initialDistributions[1].value = 1 / 9;
-    // initialDistributions[2].value = 1 / 9;
-    // initialDistributions[3].value = 1 / 9;
-    // initialDistributions[4].value = 1 / 9;
-    // initialDistributions[5].value = 1 / 36;
-    // initialDistributions[6].value = 1 / 36;
-    // initialDistributions[7].value = 1 / 36;
-    // initialDistributions[8].value = 1 / 36;
-
-
-    // for (int x = 0; x < dx; ++x)
-    // {
-    //     for (int y = 0; y < dy; ++y)
-    //     {
-    //         for (int z = 0; z < dz; ++z)
-    //         {
-    //             if (isOnDomainBoundary(x, y, z))
-    //             {
-    //                 // Dont set all neighbours
-    //             }
-
-    //             if (isOnBoundary(x, y, z))
-    //                 nodes[x + dx * y + dx * dy * z].type = BounceBack;
-    //             else
-    //             {
-    //                 nodes[x + dx * y + dx * dy * z].type = Node;
-    //                 nodes[x + dx * y + dx * dy * z].distributions = 0;
-    //             }
-    //         }
-    //     }
-    // }
 }
 
 
@@ -170,8 +133,9 @@ int main(int argc, char **argv)
     // A 2d lattice boltzmann simulation
     VelocitySet VSet;
     Node *nodes;
-    size_t totalNodes;
-    nodes = init(VSet, totalNodes);
+    size_t totalNodes = 0;
+    size_t dimensions = 0;
+    nodes = init(VSet, dimensions, totalNodes);
     std::cout << "Hoi" << '\n';
     // for (int i = 0; i < totalNodes; ++i)
     // {
@@ -191,7 +155,7 @@ int main(int argc, char **argv)
 
     // Free up the memory taken by our velocity set
     delete[] VSet.weights;
-    for (size_t i = 0; i < 9; ++i)
+    for (size_t i = 0; i < dimensions; ++i)
         delete[] VSet.directions[i];
     delete[] VSet.directions;
 
