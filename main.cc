@@ -1,45 +1,4 @@
-#include "main.ih"
-
-struct BounceBack;
-struct Perriodic;
-struct Source;
-struct Node;
-/*
-struct StreamAble; // A structure to which we can stream,
-// might be a Node, or a function to send the stream to a
-// node on another processor
-*/
-enum BoundaryNode {
-    BounceBack,
-    Perriodic,
-    Source
-};
-
-// A velocity set is a set of vectors with each having an associated weight
-struct VelocitySet
-{
-    double *weights;
-    int **directions;
-};
-
-struct Distribution
-{
-    double value;
-    double * neighbour; // stream_destination , should point to Distribution.value
-};
-
-enum NodeType
-{
-    Cell,
-    BoundaryNode
-};
-
-struct Node
-{
-    NodeType type;
-    Distribution *distributions;
-};
-
+#include "main.h"
 
 bool isOnBoundary(size_t x, size_t y, size_t z)
 {
@@ -60,50 +19,24 @@ void stream()
 
 }
 
-void initializeVelocitySet(VelocitySet & D2Q9, size_t &dimensions)
+/*size_t neighbourIdxForDistribution(size_t nodeIdx, size_t distributionIdx, VelocitySet &set)
 {
-    double *weights = new double[9];
-    weights[0] = 4.0 / 9;
-    weights[1] = 1.0 / 9;
-    weights[2] = 1.0 / 9;
-    weights[3] = 1.0 / 9;
-    weights[4] = 1.0 / 9;
-    weights[5] = 1.0 / 36;
-    weights[6] = 1.0 / 36;
-    weights[7] = 1.0 / 36;
-    weights[8] = 1.0 / 36;
+    // if isnt a boundary
+    // get the 2D idx x, y for nodeIdx,
+    // add set.directions[distributionIdx][0] to x and set.directions[distributionIdx][1] to y
+    // return a transformation from 2d idx to 1d idx
 
-    dimensions = 2;
-    size_t nDirections = 9;
-    int **directions = new int*[nDirections];
-    for(size_t i = 0; i < nDirections; ++i)
-        directions[i] = new int[dimensions];
-    // size_t directions[nDirections][2];
-    directions[0][0] = 0;     directions[0][1] =   0;
-    directions[1][0] = 1;     directions[1][1] =   0;
-    directions[2][0] = 0;     directions[2][1] =   1;
-    directions[3][0] = -1;    directions[3][1] =  0;
-    directions[4][0] = 0;     directions[4][1] =  -1;
-    directions[5][0] = 1;     directions[5][1] =    1;
-    directions[6][0] = -1;    directions[6][1] =   1;
-    directions[7][0] = -1;    directions[7][1] =  -1;
-    directions[8][0] = 1;     directions[8][1] =   -1;
+    // if is a periodic boundary
+    // do some modulo things
 
-    D2Q9.weights    = weights;
-    D2Q9.directions = directions;
+    // if other boundary, do other things, maybe this should be replaced with a set neighbours method?
+}*/
 
-    std::cout << "Velocity set:" << '\n';
-    for (size_t i = 0; i < nDirections; ++i)
-    {
-        std::cout << D2Q9.weights[i] << ',' << D2Q9.directions[i][0] << ',' << D2Q9.directions[i][1] << '\n';
-    }
-
-}
-
-Node *init(VelocitySet &velocitySet, size_t &dimensions, size_t &totalNodes)
+Node *init(VelocitySet &velocitySet, size_t &totalNodes)
 {
     // Initialize the velocity set (note: should be available to all processors)
-    initializeVelocitySet(velocitySet, dimensions);
+    initializeVelocitySet(velocitySet);
+    size_t nDirections = velocitySet.nDirections;
     size_t dx = 10;
     size_t dy = 10;
 
@@ -113,8 +46,8 @@ Node *init(VelocitySet &velocitySet, size_t &dimensions, size_t &totalNodes)
     {
         nodes[i].type = Cell;
 
-        Distribution *distributions = new Distribution[9];
-        for (size_t j = 0; j < 9; ++j)
+        Distribution *distributions = new Distribution[nDirections];
+        for (size_t j = 0; j < nDirections; ++j)
         {
             distributions[j].value = velocitySet.weights[j];
             distributions[j].neighbour = &nodes[i % 5].distributions[j].value;
@@ -127,15 +60,15 @@ Node *init(VelocitySet &velocitySet, size_t &dimensions, size_t &totalNodes)
     return nodes;
 }
 
-
 int main(int argc, char **argv)
 {
     // A 2d lattice boltzmann simulation
     VelocitySet VSet;
     Node *nodes;
     size_t totalNodes = 0;
-    size_t dimensions = 0;
-    nodes = init(VSet, dimensions, totalNodes);
+    nodes = init(VSet, totalNodes);
+
+    size_t dimensions = VSet.nDimensions;
     std::cout << "Hoi" << '\n';
     // for (int i = 0; i < totalNodes; ++i)
     // {
