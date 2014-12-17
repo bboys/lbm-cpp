@@ -1,6 +1,7 @@
 #include "main.h"
 
-double density(VelocitySet set, Node node)
+// Computes the total density on a node
+double density(VelocitySet &set, Node node)
 {
     double density = 0;
     for (size_t i = 0; i < set.nDimensions; ++i)
@@ -9,7 +10,8 @@ double density(VelocitySet set, Node node)
     return density;
 }
 
-double *velocity(VelocitySet set, Node node)
+// Coputes the projected velocity in each dimension
+double *velocity(VelocitySet &set, Node node)
 {
     size_t nDirections = set.nDirections;
     size_t nDimensions = set.nDimensions;
@@ -29,11 +31,10 @@ double *velocity(VelocitySet set, Node node)
     for (size_t dim = 0; dim < nDimensions; ++dim)
         velocity[dim] /= nodeDensity;
 
-    std::cout << '\n';
     return velocity;
 }
 
-double *equilibrium(VelocitySet set, Node node)
+double *equilibrium(VelocitySet &set, Node node)
 {
     size_t nDirections = set.nDirections;
     size_t nDimensions = set.nDimensions;
@@ -42,7 +43,7 @@ double *equilibrium(VelocitySet set, Node node)
     double *node_velocity = velocity(set, node);
     // double *distributions = node.distributions;
 
-    // Pre calculate
+    // Pre calculate the speed of the node
     double speedSquared = 0;
     for (size_t dim = 0; dim < nDimensions; ++dim)
         speedSquared += node_velocity[dim] * node_velocity[dim];
@@ -69,13 +70,10 @@ double *equilibrium(VelocitySet set, Node node)
 
 bool isOnBoundary(size_t x, size_t y, size_t z)
 {
-    if (x == 0 && y == 0) {
-        return true;
-    }
-    return false;
+    return (x == 0 && y == 0);
 }
 
-void report(VelocitySet set, Node *nodes, size_t totalNodes)
+void report(VelocitySet &set, Node *nodes, size_t totalNodes)
 {
     std::cout << "Did some iterations" << '\n';
 
@@ -109,7 +107,13 @@ void report(VelocitySet set, Node *nodes, size_t totalNodes)
     delete[] total_velocity;
 }
 
-void collision(VelocitySet set, Node *nodes, size_t totalNodes)
+void collideNode(VelocitySet &set, Node &node)
+{
+    double * node_equilibrium = equilibrium(set, node);
+
+}
+
+void collision(VelocitySet &set, Node *nodes, size_t totalNodes)
 {
     // for (size_t idx = 0; idx < totalNodes; ++idx)
     // {
@@ -128,7 +132,7 @@ void collision(VelocitySet set, Node *nodes, size_t totalNodes)
     // }
 }
 
-void stream(VelocitySet set, Node *nodes, size_t totalNodes)
+void stream(VelocitySet &set, Node *nodes, size_t totalNodes)
 {
 
 }
@@ -146,69 +150,68 @@ void stream(VelocitySet set, Node *nodes, size_t totalNodes)
     // if other boundary, do other things, maybe this should be replaced with a set neighbours method?
 }*/
 
-Node *init(VelocitySet &velocitySet, size_t &totalNodes)
+void initializeNodeAt(VelocitySet &set, Node *nodes, size_t x, size_t y, size_t dx, size_t dy)
+{
+    if (set.nDimensions != 2)
+        throw "Dimensie van velocity set is niet 2";
+    size_t idx = x * dx + y;
+    size_t nDirections = set.nDirections;
+    nodes[idx].type = Cell;
+
+    Distribution *distributions = new Distribution[nDirections];
+    for (size_t dir = 0; dir < nDirections; ++dir)
+    {
+        distributions[dir].value = set.weights[dir];
+        // periodic boundary
+        size_t neighbour_x = x + set.directions[dir][0];
+        size_t neighbour_y = y + set.directions[dir][1];
+        size_t neighbour_idx = (neighbour_x % dx) * dx + (neighbour_y % dy);
+        distributions[dir].neighbour = &nodes[neighbour_idx].distributions[dir].value;
+    }
+    nodes[idx].distributions = distributions;
+}
+
+Node *initialize(VelocitySet &set, size_t &totalNodes)
 {
     // Initialize the velocity set (note: should be available to all processors)
-    initializeVelocitySet(velocitySet);
-    size_t nDirections = velocitySet.nDirections;
+    initializeVelocitySet(set);
+
     size_t dx = 10;
     size_t dy = 10;
 
     totalNodes = dx * dy;
     Node *nodes = new Node[totalNodes];
+
     for (size_t x = 0; x < dx; ++x)
-    {
         for (size_t y = 0; y < dy; ++y)
-        {
-            size_t idx = x * dx + y;
-            nodes[idx].type = Cell;
-
-            Distribution *distributions = new Distribution[nDirections];
-            for (size_t dir = 0; dir < nDirections; ++dir)
-            {
-                distributions[dir].value = velocitySet.weights[dir];
-                // periodic boundary
-                size_t neighbour_x = x + velocitySet.directions[dir][0];
-                size_t neighbour_y = y + velocitySet.directions[dir][1];
-                size_t neighbour_idx = (neighbour_x % dx) * dx + (neighbour_y % dy);
-                distributions[dir].neighbour = &nodes[neighbour_idx].distributions[dir].value;
-            }
-            nodes[idx].distributions = distributions;
-        }
-    }
-
-    // for (size_t i = 0; i < totalNodes; ++i)
-    // {
-    // }
-
-    std::cout << "Done" << '\n';
+            initializeNodeAt(set, nodes, x, y, dx, dy);
 
     return nodes;
 }
 
 int main(int argc, char **argv)
 {
-    VelocitySet VSet;
+    VelocitySet set;
     Node *nodes;
-    size_t totalNodes = 0;    nodes = init(VSet, totalNodes);
-
+    size_t totalNodes = 0;
+    nodes = initialize(set, totalNodes);
 
     size_t iterations = 1000;
     for (size_t iter = 0; iter < iterations; ++iter)
     {
-        collision(VSet, nodes, totalNodes);
-        stream(VSet, nodes, totalNodes);
+        collision(set, nodes, totalNodes);
+        stream(set, nodes, totalNodes);
 
-        if (iter % 1000 == 0)
-            report(VSet, nodes, totalNodes);
+        if (iter % 100 == 0)
+            report(set, nodes, totalNodes);
     }
 
     // Free up the memory taken by our velocity set
-    size_t dimensions = VSet.nDimensions;
-    delete[] VSet.weights;
+    size_t dimensions = set.nDimensions;
+    delete[] set.weights;
     for (size_t i = 0; i < dimensions; ++i)
-        delete[] VSet.directions[i];
-    delete[] VSet.directions;
+        delete[] set.directions[i];
+    delete[] set.directions;
 
     for (size_t i = 0; i < totalNodes; ++i)
         delete[] nodes[i].distributions;
