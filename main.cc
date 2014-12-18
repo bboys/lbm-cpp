@@ -4,8 +4,8 @@
 double density(VelocitySet &set, Node node)
 {
     double density = 0;
-    for (size_t i = 0; i < set.nDimensions; ++i)
-        density += node.distributions[i].value;
+    for (size_t dir = 0; dir < set.nDirections; ++dir)
+        density += node.distributions[dir].value;
 
     return density;
 }
@@ -24,9 +24,11 @@ double *velocity(VelocitySet &set, Node node)
     // compute the velocity in each dimension taking in account
     // the form of our velocity set
     for (size_t dir = 0; dir < nDirections; ++dir)
+    {
+        double distribution = node.distributions[dir].value;
         for (size_t dim = 0; dim < nDimensions; ++dim)
-            velocity[dim] += node.distributions[dir].value
-                 * set.weights[dir] * set.directions[dir][dim];
+            velocity[dim] += distribution * set.weights[dir] * set.directions[dir][dim];
+    }
 
     for (size_t dim = 0; dim < nDimensions; ++dim)
         velocity[dim] /= nodeDensity;
@@ -114,12 +116,26 @@ void collideNode(VelocitySet &set, Node &node)
     size_t nDirections = set.nDirections;
 
     // TODO: make dependent on either velocity set, or domain problem
-    size_t relaxation = 1;
+    double relaxation = 1.0 / 2.0;
+
+    /*
+    this.dx = 128;
+        this.dy = 128;
+        this.vx = 0.005;
+        this.config = config;
+        var Reynolds = 100;// config.get('Re');
+        var nu = this.vx * this.dx / Reynolds;
+        this.relaxationTime = 3 * nu + 1 / 2;
+        */
 
     for (size_t dir = 0; dir < nDirections; ++dir)
+    {
+        std::cout << node_equilibrium[dir] << '\t';
         node.distributions[dir].value = node.distributions[dir].value -
             (node.distributions[dir].value - node_equilibrium[dir]) / relaxation;
+    }
 
+std::cout << '\n';
     delete[] node_equilibrium;
 }
 
@@ -127,26 +143,11 @@ void collision(VelocitySet &set, Node *nodes, size_t totalNodes)
 {
     for (size_t idx = 0; idx < totalNodes; ++idx)
         collideNode(set, nodes[idx]);
-
-    // for (size_t idx = 0; idx < totalNodes; ++idx)
-    // {
-    //     var equilibrium = this.getEquilibrium();
-    //         var velocitySet = Config.get('velocity-set');
-    //         // var force = 10;
-    //         for (var k = 0; k < this.distributions.length; k++) {
-    //                 this.distributions[k] = this.distributions[k] -
-    //                     (this.distributions[k] - equilibrium[k]) / relaxationTime;
-    //                      // + 3 * velocitySet[k].dy * velocitySet[k].w * force;
-
-    //             if (this.distributions[k] < 0) {
-    //                 // console.log("Distribution is negative!", this.distributions[k]);
-    //             }
-    //         };
-    // }
 }
 
 void stream(VelocitySet &set, Node *nodes, size_t totalNodes)
 {
+    return;
     size_t nDirections = set.nDirections;
 
     // Stream each distribution to the neighbouring nodes
@@ -232,14 +233,17 @@ int main(int argc, char **argv)
     size_t totalNodes = 0;
     nodes = initialize(set, totalNodes);
 
-    size_t iterations = 1000;
+    size_t iterations = 3;
     for (size_t iter = 0; iter < iterations; ++iter)
     {
-        collision(set, nodes, totalNodes);
-        stream(set, nodes, totalNodes);
-
+        std::cout << "Doing an iteration" << '\n';
         if (iter % 100 == 0)
             report(set, nodes, totalNodes);
+
+        collision(set, nodes, totalNodes);
+        stream(set, nodes, totalNodes);
+        std::cout << '\n' << '\n';
+
     }
 
     // Free up the memory taken by our velocity set
