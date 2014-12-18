@@ -147,7 +147,6 @@ void collision(VelocitySet &set, Node *nodes, size_t totalNodes)
 
 void stream(VelocitySet &set, Node *nodes, size_t totalNodes)
 {
-    return;
     size_t nDirections = set.nDirections;
 
     // Stream each distribution to the neighbouring nodes
