@@ -3,6 +3,9 @@
 
 #include "../main.h"
 
-// void initializeVelocitySet(VelocitySet &);
+struct VelocitySet;
+
+void initializeVelocitySet(VelocitySet & set);
+size_t oppositeDirectionOf(size_t dir);
 
 #endif

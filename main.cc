@@ -1,4 +1,10 @@
+// https://github.com/anders-dc/lbm-d3q19/blob/master/lbm.c
+
 #include "main.h"
+#include <ctime>
+
+const size_t ITERATIONS = 10000000;
+const size_t REPORT_PER_ITERATION = 100000;
 
 // Computes the total density on a node
 double density(VelocitySet &set, Node node)
@@ -16,10 +22,8 @@ double *velocity(VelocitySet &set, Node node)
     size_t nDirections = set.nDirections;
     size_t nDimensions = set.nDimensions;
     double nodeDensity = density(set, node);
-    // bleh, lelijk
-    double *velocity = new double[nDimensions];
-    for (size_t dim = 0; dim < nDimensions; ++dim)
-        velocity[dim] = 0;
+    // 0 velocity
+    double *velocity = new double[nDimensions]();
 
     // compute the velocity in each dimension taking in account
     // the form of our velocity set
@@ -68,13 +72,7 @@ double *equilibrium(VelocitySet &set, Node node)
     }
 
     delete[] node_velocity;
-
     return equilibrium;
-}
-
-bool isOnBoundary(size_t x, size_t y, size_t z)
-{
-    return (x == 0 && y == 0);
 }
 
 void report(VelocitySet &set, Node *nodes, size_t totalNodes)
@@ -82,16 +80,13 @@ void report(VelocitySet &set, Node *nodes, size_t totalNodes)
     std::cout << "Did some iterations" << '\n';
 
     double total_density = 0;
-
     for (size_t idx = 0; idx < totalNodes; ++idx)
         total_density += density(set, nodes[idx]);
 
     std::cout << "Total density: " << total_density << '\n';
 
     size_t nDimensions = set.nDimensions;
-    double *total_velocity = new double[nDimensions];
-    for (size_t dim = 0; dim < nDimensions; ++dim)
-        total_velocity[dim] = 0;
+    double *total_velocity = new double[nDimensions]();
 
     for (size_t idx = 0; idx < totalNodes; ++idx)
     {
@@ -129,13 +124,9 @@ void collideNode(VelocitySet &set, Node &node)
         */
 
     for (size_t dir = 0; dir < nDirections; ++dir)
-    {
-        std::cout << node_equilibrium[dir] << '\t';
         node.distributions[dir].value = node.distributions[dir].value -
             (node.distributions[dir].value - node_equilibrium[dir]) / relaxation;
-    }
 
-std::cout << '\n';
     delete[] node_equilibrium;
 }
 
@@ -170,61 +161,6 @@ void stream(VelocitySet &set, Node *nodes, size_t totalNodes)
     // if other boundary, do other things, maybe this should be replaced with a set neighbours method?
 }*/
 
-void initializeNodeAt(VelocitySet &set, Node &node)
-{
-    if (set.nDimensions != 2)
-        throw "Dimensie van velocity set is niet 2";
-    size_t nDirections = set.nDirections;
-    node.type = Cell;
-
-    Distribution *distributions = new Distribution[nDirections];
-    for (size_t dir = 0; dir < nDirections; ++dir)
-    {
-        distributions[dir].value     = set.weights[dir];
-        distributions[dir].nextValue = set.weights[dir];
-    }
-    node.distributions = distributions;
-}
-
-void connectNodeToNeighbours(VelocitySet &set, Node *nodes, size_t x, size_t y, size_t dx, size_t dy)
-{
-    if (set.nDimensions != 2)
-        throw "Dimensie van velocity set is niet 2";
-    size_t idx = x * dx + y;
-    size_t nDirections = set.nDirections;
-
-    for (size_t dir = 0; dir < nDirections; ++dir)
-    {
-        // periodic boundary
-        size_t neighbour_x = x + set.directions[dir][0];
-        size_t neighbour_y = y + set.directions[dir][1];
-        size_t neighbour_idx = (neighbour_x % dx) * dx + (neighbour_y % dy);
-        nodes[idx].distributions[dir].neighbour = &nodes[neighbour_idx].distributions[dir].nextValue;
-    }
-}
-
-Node *initialize(VelocitySet &set, size_t &totalNodes)
-{
-    // Initialize the velocity set (note: should be available to all processors)
-    initializeVelocitySet(set);
-
-    size_t dx = 3;
-    size_t dy = 3;
-
-    totalNodes = dx * dy;
-    Node *nodes = new Node[totalNodes];
-
-    for (size_t x = 0; x < dx; ++x)
-        for (size_t y = 0; y < dy; ++y)
-            initializeNodeAt(set, nodes[x * dx + y]);
-
-    for (size_t x = 0; x < dx; ++x)
-        for (size_t y = 0; y < dy; ++y)
-            connectNodeToNeighbours(set, nodes, x, y, dx, dy);
-
-    return nodes;
-}
-
 int main(int argc, char **argv)
 {
     VelocitySet set;
@@ -232,28 +168,29 @@ int main(int argc, char **argv)
     size_t totalNodes = 0;
     nodes = initialize(set, totalNodes);
 
-    size_t iterations = 3;
-    for (size_t iter = 0; iter < iterations; ++iter)
+    std::clock_t    start;
+    start = std::clock();
+
+    for (size_t iter = 0; iter < ITERATIONS; ++iter)
     {
-        std::cout << "Doing an iteration" << '\n';
-        if (iter % 100 == 0)
+        if (iter % REPORT_PER_ITERATION == 0)
             report(set, nodes, totalNodes);
 
         collision(set, nodes, totalNodes);
         stream(set, nodes, totalNodes);
-        std::cout << '\n' << '\n';
-
     }
+    report(set, nodes, totalNodes);
+    std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << '\n';
 
     // Free up the memory taken by our velocity set
-    size_t dimensions = set.nDimensions;
+    size_t nDirections = set.nDirections;
     delete[] set.weights;
-    for (size_t i = 0; i < dimensions; ++i)
-        delete[] set.directions[i];
+    for (size_t dir = 0; dir < nDirections; ++dir)
+        delete[] set.directions[dir];
     delete[] set.directions;
 
-    for (size_t i = 0; i < totalNodes; ++i)
-        delete[] nodes[i].distributions;
+    for (size_t idx = 0; idx < totalNodes; ++idx)
+        delete[] nodes[idx].distributions;
     delete[] nodes;
 
     return 0;

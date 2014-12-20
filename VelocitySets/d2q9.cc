@@ -1,8 +1,25 @@
 #include "d2q9.h"
 
+size_t oppositeDirectionOf(size_t dir)
+{
+    switch (dir)
+    {
+        case 0: return 0;
+        case 1: return 3;
+        case 2: return 4;
+        case 3: return 1;
+        case 4: return 2;
+        case 5: return 7;
+        case 6: return 8;
+        case 7: return 5;
+        case 8: return 6;
+    }
+    throw "Invalid direction";
+}
+
 void initializeVelocitySet(VelocitySet & D2Q9)
 {
-    size_t dimensions = 2;
+    size_t nDimensions = 2;
     size_t nDirections = 9;
 
     double *weights = new double[nDirections];
@@ -18,8 +35,9 @@ void initializeVelocitySet(VelocitySet & D2Q9)
 
     int **directions = new int*[nDirections];
     for(size_t i = 0; i < nDirections; ++i)
-        directions[i] = new int[dimensions];
+        directions[i] = new int[nDimensions];
     // size_t directions[nDirections][2];
+    //                 x                           y                    z?
     directions[0][0] = 0;     directions[0][1] =   0;
     directions[1][0] = 1;     directions[1][1] =   0;
     directions[2][0] = 0;     directions[2][1] =   1;
@@ -32,7 +50,7 @@ void initializeVelocitySet(VelocitySet & D2Q9)
 
     D2Q9.weights    = weights;
     D2Q9.directions = directions;
-    D2Q9.nDimensions = dimensions;
+    D2Q9.nDimensions = nDimensions;
     D2Q9.nDirections = nDirections;
     D2Q9.speedOfSoundSquared = 1.0 / 3.0;
 
@@ -43,5 +61,3 @@ void initializeVelocitySet(VelocitySet & D2Q9)
     for (size_t i = 0; i < nDirections; ++i)
         std::cout << D2Q9.weights[i] << ',' << D2Q9.directions[i][0] << ',' << D2Q9.directions[i][1] << '\n';
 }
-
-
