@@ -3,10 +3,10 @@
 #include "main.h"
 #include <ctime>
 
-const size_t ITERATIONS = 10000000;
+const size_t ITERATIONS = 1000000;
 const size_t REPORT_PER_ITERATION = 100000;
 
-// Computes the total density on a node
+// Computcces the total density on a node
 double density(VelocitySet &set, Node node)
 {
     double density = 0;
@@ -107,8 +107,17 @@ void report(VelocitySet &set, Node *nodes, size_t totalNodes)
 
 void collideNode(VelocitySet &set, Node &node)
 {
-    double * node_equilibrium = equilibrium(set, node);
     size_t nDirections = set.nDirections;
+
+    for (size_t dir = 0; dir < nDirections; ++dir)
+    {
+        node.distributions[dir].value = node.distributions[dir].nextValue;
+        node.distributions[dir].nextValue = 0;
+    }
+
+    return;
+
+    double * node_equilibrium = equilibrium(set, node);
 
     // TODO: make dependent on either velocity set, or domain problem
     double relaxation = 1.0 / 2.0;
@@ -127,13 +136,30 @@ void collideNode(VelocitySet &set, Node &node)
         node.distributions[dir].value = node.distributions[dir].value -
             (node.distributions[dir].value - node_equilibrium[dir]) / relaxation;
 
+            /*
+                Aangezien de kracht constant is kunnen we de volgende statement vooraf berekenen
+                en daarna opslaan in een double[dim]
+
+                oh wacht, dat kopt toch nit
+                de massa van de huidige cell wordt meegenomen, dus niet alles kan vooraf berekend worden
+
+        // + (2.0*tau - 1)/(2.0*tau)*3.0/w*f_ext;
+            Float3 f_g = {m_f*g.x, m_f*g.y, m_f*g.z}; // Gravitational force
+            f_ext = dot(f_g, e);    // Drag force along e
+            */
+
+
     delete[] node_equilibrium;
 }
 
 void collision(VelocitySet &set, Node *nodes, size_t totalNodes)
 {
     for (size_t idx = 0; idx < totalNodes; ++idx)
+    {
+        if (nodes[idx].type == BoundaryNode)
+            continue;
         collideNode(set, nodes[idx]);
+    }
 }
 
 void stream(VelocitySet &set, Node *nodes, size_t totalNodes)
@@ -144,8 +170,12 @@ void stream(VelocitySet &set, Node *nodes, size_t totalNodes)
     // since neighbour is a pointer to a boolean we only have to assign a new value
     // to the neighbour
     for (size_t idx = 0; idx < totalNodes; ++idx)
+    {
+        if (nodes[idx].type == BoundaryNode)
+            continue;
         for (size_t dir = 0; dir < nDirections; ++dir)
             *nodes[idx].distributions[dir].neighbour = nodes[idx].distributions[dir].value;
+    }
 }
 
 /*size_t neighbourIdxForDistribution(size_t nodeIdx, size_t distributionIdx, VelocitySet &set)
@@ -166,18 +196,20 @@ int main(int argc, char **argv)
     VelocitySet set;
     Node *nodes;
     size_t totalNodes = 0;
-    nodes = initialize(set, totalNodes);
+    size_t dx = 40;
+    size_t dy = 40;
+    nodes = initialize(set, totalNodes, dx, dy);
 
     std::clock_t    start;
     start = std::clock();
-
+    report(set, nodes, totalNodes);
     for (size_t iter = 0; iter < ITERATIONS; ++iter)
     {
-        if (iter % REPORT_PER_ITERATION == 0)
-            report(set, nodes, totalNodes);
-
         collision(set, nodes, totalNodes);
         stream(set, nodes, totalNodes);
+        if (iter % REPORT_PER_ITERATION == 0)
+            report(set, nodes, dx, dy);
+            // report(set, nodes, totalNodes);
     }
     report(set, nodes, totalNodes);
     std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << '\n';
