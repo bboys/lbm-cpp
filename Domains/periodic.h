@@ -2,7 +2,7 @@
 #define INCLUDED_DOMAIN_PERIODIC
 
 #include "../main.h"
-#include "../reporting/reporting.h"
+#include "../Reporting/reporting.h"
 
 struct Node;
 struct VelocitySet;
