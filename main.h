@@ -53,9 +53,10 @@ struct Node
 
 int main(int argc, char **argv);
 void stream(VelocitySet &set, Node *nodes, size_t totalNodes);
+
 void collision(VelocitySet &set, Node *nodes, size_t totalNodes);
 void collideNode(VelocitySet &set, Node &node);
-void report(VelocitySet &set, Node *nodes, size_t totalNodes);
+
 double *equilibrium(VelocitySet &set, Node node);
 double *velocity(VelocitySet &set, Node node);
 double density(VelocitySet &set, Node node);

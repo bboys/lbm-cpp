@@ -7,11 +7,7 @@ bool periodic(size_t x, size_t y, size_t dx, size_t dy)
 
 bool bounceback(size_t x, size_t y, size_t dx, size_t dy)
 {
-    // return false;
-    // return false;
-    // return x == 1 && y == 1;
-    // return ((x == 3 || x == 4) && (y == 3 || y == 4));
-    // return true;
+    // Rectangular solid boundary
     return (x == 0 || x == (dx - 1) || y == 0 || y == (dy - 1));
 }
 
@@ -39,7 +35,8 @@ void connectNodeToNeighbours(VelocitySet &set, Node *nodes, size_t x, size_t y, 
     size_t idx = x + dx * y;
     size_t nDirections = set.nDirections;
 
-    // note this should be checked durign the streaming fase
+    // note: this is not the right place for this. BounceBack nodes should not be included in storage since we use pointers
+    // to stream
     if (bounceback(x, y, dx, dy))
         nodes[idx].type = BoundaryNode;
 
@@ -53,18 +50,13 @@ void connectNodeToNeighbours(VelocitySet &set, Node *nodes, size_t x, size_t y, 
 
         if (bounceback(neighbour_x, neighbour_y, dx, dy))
         {
-            // std::cout << "Bounce Back" << '\t';
+            // bounce back (no slip)
             size_t op_dir = oppositeDirectionOf(dir);
             nodes[idx].distributions[dir].neighbour = &nodes[idx].distributions[op_dir].nextValue;
-            // std::cout << "Bounce back on (" << x << ", " << y << ") from a value "
-            //     << nodes[idx].distributions[dir].value << " to "
-            //     << "(" << neighbour_x << ", " << neighbour_y << ")"
-            //     << " with opp: " << op_dir << ", with value: " << *nodes[idx].distributions[dir].neighbour
-            //     << '\n';
         }
         else
         {
-            // std::cout << "Periodic" << '\t';
+            // periodic
             // add dx and dy to the modulo statements to make it positive
             size_t neighbour_idx = ((neighbour_x + dx) % dx) + dx * ((neighbour_y + dy) % dy);
             nodes[idx].distributions[dir].neighbour = &nodes[neighbour_idx].distributions[dir].nextValue;
@@ -85,11 +77,8 @@ Node *initialize(VelocitySet &set, size_t &totalNodes, size_t dx, size_t dy)
             initializeNodeAt(set, nodes[x + dx * y], x + dx * y);
 
     for (size_t x = 0; x < dx; ++x)
-    {
         for (size_t y = 0; y < dy; ++y)
             connectNodeToNeighbours(set, nodes, x, y, dx, dy);
-        // std::cout << '\n' << '\n' << '\n';
-    }
 
     reportOnInitialSetup(set, nodes, dx, dy);
 

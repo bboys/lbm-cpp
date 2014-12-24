@@ -12,13 +12,10 @@ void reportOnInitialSetup(VelocitySet &set, Node *nodes, size_t dx, size_t dy)
     for (size_t x = 0; x < dx; ++   x)
     {
         for (size_t y = 0; y < dy; ++y)
-        {
-            Node reported_node = nodes[x + y * dx];
             if (bounceback(x, y, dx, dy))
                 std::cout << 'B';
             else
                 std::cout << 'P';
-        }
         std::cout << '\n';
     }
 }
@@ -27,18 +24,16 @@ void reportOnNode(VelocitySet &set, Node node, size_t x, size_t y)
 {
     double node_density = density(set, node);
     double *node_velocity = velocity(set, node);
-    std::cout << std::fixed;
-    // std::cout << std::setfill(' ') << std::setw(2);
+
+    size_t nDimensions = set.nDimensions;
+
     std::cout << "(" << x << ", " << y << ") | ("
               << node_density
-              << ") | (" << node_velocity[0] << "," << node_velocity[1] << ")";
-    // for (size_t dir = 0; dir < set.nDirections; ++dir)
-    //     std::cout << "("
-    //             << std::setfill('0') << std::setw(4) << node.distributions[dir].value << ", "
-    //             << std::setfill('0') << std::setw(4) << *node.distributions[dir].neighbour << ", "
-    //             << std::setfill('0') << std::setw(4) << node.distributions[dir].nextValue << ")" << " ";
-
-    std::cout << '\n';
+              << ") | (";
+    for (size_t dim = 0; dim < nDimensions; ++dim)
+        std::cout << node_velocity[0] << ", ";
+    std::cout << ")" << '\n';
+    delete[] node_velocity;
 }
 
 void report(VelocitySet &set, Node *nodes, size_t dx, size_t dy)
@@ -47,4 +42,33 @@ void report(VelocitySet &set, Node *nodes, size_t dx, size_t dy)
     for (size_t y = 0; y < dy; ++y)
         for (size_t x = 0; x < dx; ++   x)
             reportOnNode(set, nodes[x + dx * y], x, y);
+}
+
+// Report on the total density and the total velocity
+void report(VelocitySet &set, Node *nodes, size_t totalNodes)
+{
+    double total_density = 0;
+    for (size_t idx = 0; idx < totalNodes; ++idx)
+        total_density += density(set, nodes[idx]);
+
+    std::cout << "Total density: " << total_density << '\n';
+
+    size_t nDimensions = set.nDimensions;
+    double *total_velocity = new double[nDimensions]();
+
+    for (size_t idx = 0; idx < totalNodes; ++idx)
+    {
+        double *node_velocity = velocity(set, nodes[idx]);
+        for (size_t dim = 0; dim < nDimensions; ++dim)
+            total_velocity[dim] += node_velocity[dim];
+
+        delete[] node_velocity;
+    }
+
+    std::cout << "Total velocity: ";
+    for (size_t dim = 0; dim < nDimensions; ++dim)
+        std::cout << total_velocity[dim] << '\t';
+    std::cout << '\n';
+
+    delete[] total_velocity;
 }

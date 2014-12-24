@@ -1,12 +1,13 @@
+// inspiration:
 // https://github.com/anders-dc/lbm-d3q19/blob/master/lbm.c
 
 #include "main.h"
 #include <ctime>
 
-const size_t ITERATIONS = 1000000;
-const size_t REPORT_PER_ITERATION = 100000;
+const size_t ITERATIONS = 1000;
+const size_t REPORT_PER_ITERATION = 100;
 
-// Computcces the total density on a node
+// Computes the total density on a node
 double density(VelocitySet &set, Node node)
 {
     double density = 0;
@@ -16,13 +17,12 @@ double density(VelocitySet &set, Node node)
     return density;
 }
 
-// Coputes the projected velocity in each dimension
+// Computes the projected velocity in each dimension
 double *velocity(VelocitySet &set, Node node)
 {
     size_t nDirections = set.nDirections;
     size_t nDimensions = set.nDimensions;
     double nodeDensity = density(set, node);
-    // 0 velocity
     double *velocity = new double[nDimensions]();
 
     // compute the velocity in each dimension taking in account
@@ -47,7 +47,6 @@ double *equilibrium(VelocitySet &set, Node node)
     double speedOfSoundSquared = set.speedOfSoundSquared;
     double node_density = density(set, node);
     double *node_velocity = velocity(set, node);
-    // double *distributions = node.distributions;
 
     // Pre calculate the speed of the node
     double speedSquared = 0;
@@ -75,79 +74,25 @@ double *equilibrium(VelocitySet &set, Node node)
     return equilibrium;
 }
 
-void report(VelocitySet &set, Node *nodes, size_t totalNodes)
-{
-    std::cout << "Did some iterations" << '\n';
-
-    double total_density = 0;
-    for (size_t idx = 0; idx < totalNodes; ++idx)
-        total_density += density(set, nodes[idx]);
-
-    std::cout << "Total density: " << total_density << '\n';
-
-    size_t nDimensions = set.nDimensions;
-    double *total_velocity = new double[nDimensions]();
-
-    for (size_t idx = 0; idx < totalNodes; ++idx)
-    {
-        double *node_velocity = velocity(set, nodes[idx]);
-        for (size_t dim = 0; dim < nDimensions; ++dim)
-            total_velocity[dim] += node_velocity[dim];
-
-        delete[] node_velocity;
-    }
-
-    std::cout << "Total velocity: ";
-    for (size_t dim = 0; dim < nDimensions; ++dim)
-        std::cout << total_velocity[dim] << '\t';
-    std::cout << '\n';
-
-    delete[] total_velocity;
-}
-
 void collideNode(VelocitySet &set, Node &node)
 {
     size_t nDirections = set.nDirections;
 
+    // switch to the newly streamed distribution values
     for (size_t dir = 0; dir < nDirections; ++dir)
     {
         node.distributions[dir].value = node.distributions[dir].nextValue;
         node.distributions[dir].nextValue = 0;
     }
 
-    return;
-
+    // TODO: make dependent on either velocity set, or domain problem
+    double relaxation = 1.0 / 3.0;
     double * node_equilibrium = equilibrium(set, node);
 
-    // TODO: make dependent on either velocity set, or domain problem
-    double relaxation = 1.0 / 2.0;
-
-    /*
-    this.dx = 128;
-        this.dy = 128;
-        this.vx = 0.005;
-        this.config = config;
-        var Reynolds = 100;// config.get('Re');
-        var nu = this.vx * this.dx / Reynolds;
-        this.relaxationTime = 3 * nu + 1 / 2;
-        */
-
+    // apply BGK approximation
     for (size_t dir = 0; dir < nDirections; ++dir)
         node.distributions[dir].value = node.distributions[dir].value -
             (node.distributions[dir].value - node_equilibrium[dir]) / relaxation;
-
-            /*
-                Aangezien de kracht constant is kunnen we de volgende statement vooraf berekenen
-                en daarna opslaan in een double[dim]
-
-                oh wacht, dat kopt toch nit
-                de massa van de huidige cell wordt meegenomen, dus niet alles kan vooraf berekend worden
-
-        // + (2.0*tau - 1)/(2.0*tau)*3.0/w*f_ext;
-            Float3 f_g = {m_f*g.x, m_f*g.y, m_f*g.z}; // Gravitational force
-            f_ext = dot(f_g, e);    // Drag force along e
-            */
-
 
     delete[] node_equilibrium;
 }
@@ -178,26 +123,13 @@ void stream(VelocitySet &set, Node *nodes, size_t totalNodes)
     }
 }
 
-/*size_t neighbourIdxForDistribution(size_t nodeIdx, size_t distributionIdx, VelocitySet &set)
-{
-    // if isnt a boundary
-    // get the 2D idx x, y for nodeIdx,
-    // add set.directions[distributionIdx][0] to x and set.directions[distributionIdx][1] to y
-    // return a transformation from 2d idx to 1d idx
-
-    // if is a periodic boundary
-    // do some modulo things
-
-    // if other boundary, do other things, maybe this should be replaced with a set neighbours method?
-}*/
-
 int main(int argc, char **argv)
 {
     VelocitySet set;
     Node *nodes;
     size_t totalNodes = 0;
-    size_t dx = 40;
-    size_t dy = 40;
+    size_t dx = 20;
+    size_t dy = 20;
     nodes = initialize(set, totalNodes, dx, dy);
 
     std::clock_t    start;
@@ -208,9 +140,10 @@ int main(int argc, char **argv)
         collision(set, nodes, totalNodes);
         stream(set, nodes, totalNodes);
         if (iter % REPORT_PER_ITERATION == 0)
-            report(set, nodes, dx, dy);
-            // report(set, nodes, totalNodes);
+            report(set, nodes, totalNodes);
+            // report(set, nodes, dx, dy);
     }
+    report(set, nodes, dx, dy);
     report(set, nodes, totalNodes);
     std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << '\n';
 
