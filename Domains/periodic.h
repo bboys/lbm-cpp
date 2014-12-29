@@ -7,11 +7,15 @@
 struct Node;
 struct VelocitySet;
 
-void initializeNodeAt(VelocitySet &set, Node &node, size_t idx);
-void connectNodeToNeighbours(VelocitySet &set, Node *nodes, size_t x, size_t y, size_t dx, size_t dy);
-Node *initialize(VelocitySet &set, size_t &totalNodes, size_t dx, size_t dy);
+namespace Domains { namespace Periodic {
 
-bool periodic(size_t x, size_t y, size_t dx, size_t dy);
-bool bounceback(size_t x, size_t y, size_t dx, size_t dy);
+    void initializeNodeAt(VelocitySet &set, Node &node, size_t idx);
+    void connectNodeToNeighbours(VelocitySet &set, Node *nodes, size_t x, size_t y, size_t dx, size_t dy);
+    Node *initialize(VelocitySet &set, size_t &totalNodes, size_t dx, size_t dy);
+
+    bool periodic(size_t x, size_t y, size_t dx, size_t dy);
+    bool bounceback(size_t x, size_t y, size_t dx, size_t dy);
+
+} }
 
 #endif

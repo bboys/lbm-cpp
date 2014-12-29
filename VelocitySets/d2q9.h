@@ -5,7 +5,9 @@
 
 struct VelocitySet;
 
-void initializeVelocitySet(VelocitySet & set);
-size_t oppositeDirectionOf(size_t dir);
+namespace VelocitySets { namespace D2Q9 {
+    void initializeVelocitySet(VelocitySet & set);
+    size_t oppositeDirectionOf(size_t dir);
+}}
 
 #endif

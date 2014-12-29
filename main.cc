@@ -4,6 +4,9 @@
 #include "main.h"
 #include <ctime>
 
+using namespace Domains::Periodic;
+using namespace Reporting;
+
 const size_t ITERATIONS = 1000;
 const size_t REPORT_PER_ITERATION = 100;
 
