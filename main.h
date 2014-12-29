@@ -4,23 +4,21 @@
 #include <iostream>
 #include <string>
 
+// #include "Domains/LidDrivenCavity.h"
 #include "Domains/periodic.h"
 #include "VelocitySets/d2q9.h"
 
 struct BounceBack;
-struct Perriodic;
+struct Periodic;
 struct Source;
 struct Node;
+struct ZouHe;
 /*
 struct StreamAble; // A structure to which we can stream,
 // might be a Node, or a function to send the stream to a
 // node on another processor
 */
-enum BoundaryNode {
-    BounceBack,
-    Perriodic,
-    Source
-};
+
 
 // A velocity set is a set of vectors with each having an associated weight
 struct VelocitySet
@@ -42,7 +40,10 @@ struct Distribution
 enum NodeType
 {
     Cell,
-    BoundaryNode
+    BounceBack,
+    Periodic,
+    Source,
+    ZouHe
 };
 
 struct Node

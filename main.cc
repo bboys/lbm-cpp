@@ -4,11 +4,12 @@
 #include "main.h"
 #include <ctime>
 
+// using namespace Domains::LidDrivenCavity;
 using namespace Domains::Periodic;
 using namespace Reporting;
 
-const size_t ITERATIONS = 1000;
-const size_t REPORT_PER_ITERATION = 100;
+const size_t ITERATIONS = 10;
+const size_t REPORT_PER_ITERATION = 1;
 
 // Computes the total density on a node
 double density(VelocitySet &set, Node node)
@@ -104,7 +105,7 @@ void collision(VelocitySet &set, Node *nodes, size_t totalNodes)
 {
     for (size_t idx = 0; idx < totalNodes; ++idx)
     {
-        if (nodes[idx].type == BoundaryNode)
+        if (nodes[idx].type == BounceBack)
             continue;
         collideNode(set, nodes[idx]);
     }
@@ -119,7 +120,7 @@ void stream(VelocitySet &set, Node *nodes, size_t totalNodes)
     // to the neighbour
     for (size_t idx = 0; idx < totalNodes; ++idx)
     {
-        if (nodes[idx].type == BoundaryNode)
+        if (nodes[idx].type == BounceBack)
             continue;
         for (size_t dir = 0; dir < nDirections; ++dir)
             *nodes[idx].distributions[dir].neighbour = nodes[idx].distributions[dir].value;
@@ -131,9 +132,11 @@ int main(int argc, char **argv)
     VelocitySet set;
     Node *nodes;
     size_t totalNodes = 0;
-    size_t dx = 20;
-    size_t dy = 20;
+    size_t totalBoundaryNodes = 0;
+    size_t dx = 5;
+    size_t dy = 5;
     nodes = initialize(set, totalNodes, dx, dy);
+    Node ** bNodes = boundaryNodes(nodes, dx, dy, totalBoundaryNodes);
 
     std::clock_t    start;
     start = std::clock();
@@ -142,6 +145,8 @@ int main(int argc, char **argv)
     {
         collision(set, nodes, totalNodes);
         stream(set, nodes, totalNodes);
+        applyBoundaryConditions(set, bNodes, totalBoundaryNodes);
+
         if (iter % REPORT_PER_ITERATION == 0)
             report(set, nodes, totalNodes);
             // report(set, nodes, dx, dy);
@@ -157,6 +162,7 @@ int main(int argc, char **argv)
         delete[] set.directions[dir];
     delete[] set.directions;
 
+    delete[] bNodes;
     for (size_t idx = 0; idx < totalNodes; ++idx)
         delete[] nodes[idx].distributions;
     delete[] nodes;

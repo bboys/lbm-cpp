@@ -21,7 +21,6 @@ namespace Domains { namespace Periodic {
         if (set.nDimensions != 2)
             throw "Dimensie van velocity set is niet 2";
         size_t nDirections = set.nDirections;
-        node.type = Cell;
 
         Distribution *distributions = new Distribution[nDirections];
         for (size_t dir = 0; dir < nDirections; ++dir)
@@ -43,7 +42,9 @@ namespace Domains { namespace Periodic {
         // note: this is not the right place for this. BounceBack nodes should not be included in storage since we use pointers
         // to stream
         if (bounceback(x, y, dx, dy))
-            nodes[idx].type = BoundaryNode;
+            nodes[idx].type = BounceBack;
+        else
+            nodes[idx].type = Cell;
 
         for (size_t dir = 0; dir < nDirections; ++dir)
         {
@@ -90,8 +91,13 @@ namespace Domains { namespace Periodic {
         return nodes;
     }
 
+    Node **boundaryNodes(Node *nodes, size_t dx, size_t dy, size_t &totalBoundaryNodes)
+    {
+        return new Node*[0];
+    }
+
     // apply zou he etc.
-    void applyBoundaryConditions(VelocitySet set, Node *nodes)
+    void applyBoundaryConditions(VelocitySet set, Node **nodes, size_t totalBoundaryNodes)
     {
         return;
     }

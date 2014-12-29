@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <limits>
 
+// using namespace Domains::LidDrivenCavity;
 using namespace Domains::Periodic;
 
 namespace Reporting {
@@ -17,15 +18,20 @@ namespace Reporting {
         for (size_t x = 0; x < dx; ++   x)
         {
             for (size_t y = 0; y < dy; ++y)
-                if (bounceback(x, y, dx, dy))
+            {
+                size_t idx = x + dx * y;
+                if (nodes[idx].type == ZouHe)
+                    std::cout << 'Z';
+                else if (nodes[idx].type == BounceBack)
                     std::cout << 'B';
                 else
                     std::cout << 'P';
+            }
             std::cout << '\n';
         }
     }
 
-    void reportOnNode(VelocitySet &set, Node node, size_t x, size_t y)
+    void reportOnNode(VelocitySet &set, Node &node, size_t x, size_t y)
     {
         double node_density = density(set, node);
         double *node_velocity = velocity(set, node);
@@ -36,9 +42,24 @@ namespace Reporting {
                   << node_density
                   << ") | (";
         for (size_t dim = 0; dim < nDimensions; ++dim)
-            std::cout << node_velocity[0] << ", ";
+            std::cout << node_velocity[dim] << ", ";
         std::cout << ")" << '\n';
         delete[] node_velocity;
+    }
+
+    void reportOnDistributions(VelocitySet &set, Node &node)
+    {
+        size_t nDirections = set.nDirections;
+
+        std::cout << "Current: \n(";
+        for (size_t dir = 0; dir < nDirections; ++dir)
+            std::cout << node.distributions[dir].value << ", ";
+        std::cout << ")" << '\n';
+
+        std::cout << "Next: \n(";
+        for (size_t dir = 0; dir < nDirections; ++dir)
+            std::cout << node.distributions[dir].nextValue << ", ";
+        std::cout << ")" << '\n';
     }
 
     void report(VelocitySet &set, Node *nodes, size_t dx, size_t dy)

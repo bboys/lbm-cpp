@@ -12,9 +12,11 @@ namespace Domains { namespace Periodic {
     void initializeNodeAt(VelocitySet &set, Node &node, size_t idx);
     void connectNodeToNeighbours(VelocitySet &set, Node *nodes, size_t x, size_t y, size_t dx, size_t dy);
     Node *initialize(VelocitySet &set, size_t &totalNodes, size_t dx, size_t dy);
+    Node **boundaryNodes(Node *nodes, size_t dx, size_t dy, size_t &totalBoundaryNodes);
 
     bool periodic(size_t x, size_t y, size_t dx, size_t dy);
     bool bounceback(size_t x, size_t y, size_t dx, size_t dy);
+    void applyBoundaryConditions(VelocitySet set, Node **nodes, size_t totalBoundaryNodes);
 
 } }
 
