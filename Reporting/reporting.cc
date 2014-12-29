@@ -4,9 +4,6 @@
 #include <iomanip>
 #include <limits>
 
-// using namespace Domains::LidDrivenCavity;
-using namespace Domains::Periodic;
-
 namespace Reporting {
 
     void reportOnInitialSetup(VelocitySet &set, Node *nodes, size_t dx, size_t dy)
