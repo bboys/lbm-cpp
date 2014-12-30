@@ -12,9 +12,9 @@ namespace Reporting {
             << "Grid size " << dx << "x" << dy
             << '\n' << '\n';
         // Shows a grid of letters representing the type of each node
-        for (size_t x = 0; x < dx; ++   x)
+        for (size_t y = 0; y < dy; ++y)
         {
-            for (size_t y = 0; y < dy; ++y)
+            for (size_t x = 0; x < dx; ++x)
             {
                 size_t idx = x + dx * y;
                 if (nodes[idx].type == ZouHe)
