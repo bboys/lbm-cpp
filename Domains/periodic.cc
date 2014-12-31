@@ -38,13 +38,17 @@ namespace Domains { namespace Periodic {
 
         size_t idx = x + dx * y;
         size_t nDirections = set.nDirections;
+        size_t nDimensions = set.nDimensions;
+        nodes[idx].position = new double[nDimensions];
+        nodes[idx].position[0] = x;
+        nodes[idx].position[1] = y;
 
         // note: this is not the right place for this. BounceBack nodes should not be included in storage since we use pointers
         // to stream
         if (bounceback(x, y, dx, dy))
-            nodes[idx].type = BounceBack;
+            nodes[idx].type = NodeType::BounceBack;
         else
-            nodes[idx].type = Cell;
+            nodes[idx].type = NodeType::Cell;
 
         for (size_t dir = 0; dir < nDirections; ++dir)
         {

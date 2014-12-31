@@ -4,15 +4,35 @@
 #include <iostream>
 #include <string>
 
-// #include "Domains/LidDrivenCavity.h"
+#include "Domains/LidDrivenCavity.h"
 #include "Domains/periodic.h"
 #include "VelocitySets/d2q9.h"
 
-struct BounceBack;
-struct Periodic;
-struct Source;
-struct Node;
-struct ZouHe;
+// struct BounceBack;
+// struct Periodic;
+// struct Source;
+// struct Node;
+
+// enum class Direction {
+//     N, NE, E, S, SE, SW, W, NW
+// };
+
+// // struct ZouHe;
+// struct ZouHe {
+//     Direction direction;
+//     // enum type {
+//     //     velocity,
+//     //     density
+//     // },
+//     // enum value {
+//     //     density,
+//     //     double *velocity
+//     // },
+
+// };
+// enum ZouHe {
+//     N, NE, E, S, SE, SW, W, NW
+// };
 /*
 struct StreamAble; // A structure to which we can stream,
 // might be a Node, or a function to send the stream to a
@@ -37,19 +57,11 @@ struct Distribution
     double * neighbour; // stream_destination , should point to Distribution.value
 };
 
-enum NodeType
-{
-    Cell,
-    BounceBack,
-    Periodic,
-    Source,
-    ZouHe
-};
-
 struct Node
 {
     NodeType type;
     Distribution *distributions;
+    double *position;
 };
 
 int main(int argc, char **argv);

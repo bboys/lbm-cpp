@@ -17,12 +17,22 @@ namespace Reporting {
             for (size_t x = 0; x < dx; ++x)
             {
                 size_t idx = x + dx * y;
-                if (nodes[idx].type == ZouHe)
+                if (nodes[idx].type == NodeType::ZouHe)
                     std::cout << 'Z';
-                else if (nodes[idx].type == BounceBack)
+                else if (nodes[idx].type == NodeType::BounceBack)
                     std::cout << 'B';
                 else
                     std::cout << 'P';
+            }
+            std::cout << '\n';
+        }
+
+        for (size_t y = 0; y < dy; ++y)
+        {
+            for (size_t x = 0; x < dx; ++x)
+            {
+                size_t idx = x + dx * y;
+                std::cout << idx;
             }
             std::cout << '\n';
         }
@@ -35,9 +45,13 @@ namespace Reporting {
 
         size_t nDimensions = set.nDimensions;
 
-        std::cout << "(" << x << ", " << y << ") | ("
-                  << node_density
-                  << ") | (";
+        // show position
+        std::cout << "(";
+        for (size_t dir = 0; dir < nDimensions; ++dir)
+            std::cout << node.position[dir] << ", ";
+        // show density
+        std::cout << ") | (" << node_density << ") | (";
+        // show velocity
         for (size_t dim = 0; dim < nDimensions; ++dim)
             std::cout << node_velocity[dim] << ", ";
         std::cout << ")" << '\n';
