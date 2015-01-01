@@ -88,7 +88,7 @@ void collideNode(VelocitySet &set, Node &node)
         node.distributions[dir].value = node.distributions[dir].nextValue;
         node.distributions[dir].nextValue = 0;
     }
-
+    return;
     // TODO: make dependent on either velocity set, or domain problem
     double relaxation = 1.0 / 3.0;
     double * node_equilibrium = equilibrium(set, node);
@@ -145,8 +145,13 @@ int main(int argc, char **argv)
 
     for (size_t iter = 0; iter < ITERATIONS; ++iter)
     {
-        // collision(set, nodes, totalNodes);
+        collision(set, nodes, totalNodes);
         stream(set, nodes, totalNodes);
+        /*
+        #ifndef PARALLEL
+            communicate(Messenger *messengers, size_t totalMessengers);
+        #endif
+        */
         applyBoundaryConditions(set, bNodes, totalBoundaryNodes);
 
         if (iter % REPORT_PER_ITERATION == 0)
