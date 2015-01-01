@@ -95,13 +95,13 @@ namespace Domains { namespace Periodic {
         return nodes;
     }
 
-    Node **boundaryNodes(Node *nodes, size_t dx, size_t dy, size_t &totalBoundaryNodes)
+    BoundaryNode *boundaryNodes(Node *nodes, size_t dx, size_t dy, size_t &totalBoundaryNodes)
     {
-        return new Node*[0];
+        return new BoundaryNode[0];
     }
 
     // apply zou he etc.
-    void applyBoundaryConditions(VelocitySet set, Node **nodes, size_t totalBoundaryNodes)
+    void applyBoundaryConditions(VelocitySet set, BoundaryNode *nodes, size_t totalBoundaryNodes)
     {
         return;
     }

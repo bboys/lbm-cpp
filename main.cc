@@ -137,7 +137,7 @@ int main(int argc, char **argv)
     size_t dx = 3;
     size_t dy = 3;
     nodes = initialize(set, totalNodes, dx, dy);
-    Node ** bNodes = boundaryNodes(nodes, dx, dy, totalBoundaryNodes);
+    BoundaryNode *bNodes = boundaryNodes(nodes, dx, dy, totalBoundaryNodes);
 
     std::clock_t    start;
     start = std::clock();
