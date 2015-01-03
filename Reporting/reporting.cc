@@ -22,17 +22,7 @@ namespace Reporting {
                 else if (nodes[idx].type == NodeType::BounceBack)
                     std::cout << 'B';
                 else
-                    std::cout << 'P';
-            }
-            std::cout << '\n';
-        }
-
-        for (size_t y = 0; y < dy; ++y)
-        {
-            for (size_t x = 0; x < dx; ++x)
-            {
-                size_t idx = x + dx * y;
-                std::cout << idx;
+                    std::cout << '.';
             }
             std::cout << '\n';
         }
