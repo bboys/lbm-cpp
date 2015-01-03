@@ -39,7 +39,7 @@ namespace Domains { namespace Periodic {
         size_t idx = x + dx * y;
         size_t nDirections = set.nDirections;
         size_t nDimensions = set.nDimensions;
-        nodes[idx].position = new double[nDimensions];
+        nodes[idx].position = new size_t[nDimensions];
         nodes[idx].position[0] = x;
         nodes[idx].position[1] = y;
 
