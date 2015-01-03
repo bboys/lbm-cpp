@@ -8,7 +8,7 @@ using namespace Domains::LidDrivenCavity;
 // using namespace Domains::Periodic;
 using namespace Reporting;
 
-const size_t ITERATIONS = 1;
+const size_t ITERATIONS = 200;
 const size_t REPORT_PER_ITERATION = 1;
 
 // Computes the total density on a node
@@ -88,7 +88,6 @@ void collideNode(VelocitySet &set, Node &node)
         node.distributions[dir].value = node.distributions[dir].nextValue;
         node.distributions[dir].nextValue = 0;
     }
-    return;
     // TODO: make dependent on either velocity set, or domain problem
     double relaxation = 1.0 / 3.0;
     double * node_equilibrium = equilibrium(set, node);
@@ -134,8 +133,8 @@ int main(int argc, char **argv)
     Node *nodes;
     size_t totalNodes = 0;
     size_t totalBoundaryNodes = 0;
-    size_t dx = 3;
-    size_t dy = 3;
+    size_t dx = 100;
+    size_t dy = 100;
     nodes = initialize(set, totalNodes, dx, dy);
     BoundaryNode *bNodes = boundaryNodes(nodes, dx, dy, totalBoundaryNodes);
 
@@ -145,6 +144,7 @@ int main(int argc, char **argv)
 
     for (size_t iter = 0; iter < ITERATIONS; ++iter)
     {
+        applyBoundaryConditions(set, bNodes, totalBoundaryNodes);
         collision(set, nodes, totalNodes);
         stream(set, nodes, totalNodes);
         /*
@@ -152,15 +152,14 @@ int main(int argc, char **argv)
             communicate(Messenger *messengers, size_t totalMessengers);
         #endif
         */
-        applyBoundaryConditions(set, bNodes, totalBoundaryNodes);
 
         if (iter % REPORT_PER_ITERATION == 0)
             report(set, nodes, totalNodes);
             // report(set, nodes, dx, dy);
     }
 
-    report(set, nodes, dx, dy);
-    report(set, nodes, totalNodes);
+    // report(set, nodes, dx, dy);
+    // report(set, nodes, totalNodes);
     std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << '\n';
 
     // Free up the memory taken by our velocity set
