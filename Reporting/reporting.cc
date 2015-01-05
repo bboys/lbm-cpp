@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iomanip>
 #include <limits>
+#include <fstream>
 
 namespace Reporting {
 
@@ -12,7 +13,7 @@ namespace Reporting {
             << "Grid size " << dx << "x" << dy
             << '\n' << '\n';
         // Shows a grid of letters representing the type of each node
-        for (size_t y = 0; y < dy; ++y)
+        for (size_t y = dy; y--;)
         {
             for (size_t x = 0; x < dx; ++x)
             {
@@ -74,6 +75,21 @@ namespace Reporting {
     // Report on the total density and the total velocity
     void report(VelocitySet &set, Node *nodes, size_t totalNodes)
     {
+        /*
+        for (size_t p = 0; p < totalProcessors; ++p)
+        {
+            if (p == P)
+            {
+                std::ofstream out("logs/test.txt");
+                Reporting::MatlabReporter reporter(out);
+                reporter.reportOnTimeStep(set, nodes, totalNodes);
+                bsp_sycn();
+
+            }
+        }
+        */
+
+
         double total_density = 0;
         for (size_t idx = 0; idx < totalNodes; ++idx)
             total_density += density(set, nodes[idx]);
@@ -91,12 +107,19 @@ namespace Reporting {
 
             delete[] node_velocity;
         }
-
+        return;
         std::cout << "Total velocity: ";
         for (size_t dim = 0; dim < nDimensions; ++dim)
             std::cout << total_velocity[dim] << '\t';
         std::cout << '\n';
 
         delete[] total_velocity;
+    }
+
+    void report(std::string outputFileName, VelocitySet &set, Node *nodes, size_t totalNodes)
+    {
+        std::ofstream out(outputFileName, std::ios::out | std::ios::app);
+        Reporting::MatlabReporter reporter(out);
+        reporter.reportOnTimeStep(set, nodes, totalNodes);
     }
 }

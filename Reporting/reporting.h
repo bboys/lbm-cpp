@@ -12,6 +12,7 @@ namespace Reporting {
     void reportOnDistributions(VelocitySet &set, Node &node);
     void report(VelocitySet &set, Node *nodes, size_t dx, size_t dy);
     void report(VelocitySet &set, Node *nodes, size_t totalNodes);
+    void report(std::string outputFileName, VelocitySet &set, Node *nodes, size_t totalNodes);
 }
 
 #endif

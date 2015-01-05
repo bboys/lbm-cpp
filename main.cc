@@ -3,13 +3,16 @@
 
 #include "main.h"
 #include <ctime>
+#include <fstream>
 
 using namespace Domains::LidDrivenCavity;
 // using namespace Domains::Periodic;
 using namespace Reporting;
 
-const size_t ITERATIONS = 200;
-const size_t REPORT_PER_ITERATION = 1;
+const size_t ITERATIONS = 10000;
+const size_t REPORT_PER_ITERATION = 20;
+const size_t dx = 100;
+const size_t dy = 100;
 
 // Computes the total density on a node
 double density(VelocitySet &set, Node node)
@@ -89,7 +92,15 @@ void collideNode(VelocitySet &set, Node &node)
         node.distributions[dir].nextValue = 0;
     }
     // TODO: make dependent on either velocity set, or domain problem
-    double relaxation = 1.0 / 3.0;
+/*
+// u = (2 * tau -1) n / 6 // shear viscosity
+double mu = 2; // kinematic viscosity
+// double mu = L * U / RE
+// RE = L * U / mu  = 6 N U / (tau - .5), N = L / dx, number of lattice spaces, U velocity
+double tau = 3 * (mu + 0.5);*/
+    double RE = 500;
+    double relaxation = 3 * 0.05 * dy / RE + 0.5;
+    // double relaxation = 0.05;
     double * node_equilibrium = equilibrium(set, node);
 
     // apply BGK approximation
@@ -133,10 +144,19 @@ int main(int argc, char **argv)
     Node *nodes;
     size_t totalNodes = 0;
     size_t totalBoundaryNodes = 0;
-    size_t dx = 100;
-    size_t dy = 100;
+    // size_t dx = 200;
+    // size_t dy = 200;
+
     nodes = initialize(set, totalNodes, dx, dy);
     BoundaryNode *bNodes = boundaryNodes(nodes, dx, dy, totalBoundaryNodes);
+
+    // Log the data
+    std::string outputFileName = "logs/test4.txt";
+    std::ofstream out(outputFileName, std::ios::out | std::ios::app);
+    Reporting::MatlabReporter reporter(out);
+    reporter.initialReport(set, dx, dy);
+    out.close();
+
 
     std::clock_t    start;
     start = std::clock();
@@ -144,7 +164,6 @@ int main(int argc, char **argv)
 
     for (size_t iter = 0; iter < ITERATIONS; ++iter)
     {
-        applyBoundaryConditions(set, bNodes, totalBoundaryNodes);
         collision(set, nodes, totalNodes);
         stream(set, nodes, totalNodes);
         /*
@@ -152,11 +171,13 @@ int main(int argc, char **argv)
             communicate(Messenger *messengers, size_t totalMessengers);
         #endif
         */
+        applyBoundaryConditions(set, bNodes, totalBoundaryNodes);
 
         if (iter % REPORT_PER_ITERATION == 0)
             report(set, nodes, totalNodes);
             // report(set, nodes, dx, dy);
     }
+    report(outputFileName, set, nodes, totalNodes);
 
     // report(set, nodes, dx, dy);
     // report(set, nodes, totalNodes);

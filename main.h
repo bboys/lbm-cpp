@@ -19,6 +19,7 @@
 #include "Domains/LidDrivenCavity.h"
 #include "Domains/periodic.h"
 #include "VelocitySets/d2q9.h"
+#include "Reporting/MatlabReporter.h"
 
 // struct BounceBack;
 // struct Periodic;
