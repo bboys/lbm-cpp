@@ -29,7 +29,7 @@ namespace Reporting {
         }
     }
 
-    void reportOnNode(VelocitySet &set, Node &node, size_t x, size_t y)
+    void reportOnNode(VelocitySet &set, Node &node)
     {
         double node_density = density(set, node);
         double *node_velocity = velocity(set, node);
@@ -67,9 +67,9 @@ namespace Reporting {
     void report(VelocitySet &set, Node *nodes, size_t dx, size_t dy)
     {
         std::cout << '\n' << '\n';
-        for (size_t y = 0; y < dy; ++y)
-            for (size_t x = 0; x < dx; ++   x)
-                reportOnNode(set, nodes[x + dx * y], x, y);
+        size_t totalNodes = dx * dy;
+        for (size_t idx = 0; idx < totalNodes; ++idx)
+            reportOnNode(set, nodes[idx]);
     }
 
     // Report on the total density and the total velocity
