@@ -376,7 +376,7 @@ namespace Domains {
         return position[1] < 0; // anything above our top wall is not periodic
     }
 
-    void LidDrivenCavityDomain::createBoundaryNodes()
+    void LidDrivenCavityDomain::createBoundaryNodes(std::vector<Node> &nodes)
     {
 
     }

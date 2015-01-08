@@ -38,7 +38,7 @@ namespace Domains {
             Node initializeNodeAt(std::vector<int> position);
             virtual void connectNodeToNeighbours(Node &node);
             virtual bool isInDomain(std::vector<int> position);
-            virtual void createBoundaryNodes();
+            virtual void createBoundaryNodes(std::vector<Node> &nodes);
             virtual BoundaryNode &initializeBoundaryNode(Node &node);
 
             // In order to use a multi dimensional array, we actually

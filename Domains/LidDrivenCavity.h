@@ -67,7 +67,7 @@ namespace Domains {
             bool isZouHe(std::vector<int> position);
             bool pointsOutwards(std::vector<int> position);
 
-            void createBoundaryNodes() override;
+            void createBoundaryNodes(std::vector<Node> &nodes) override;
             BoundaryNode &initializeBoundaryNode(Node &node) override;
     };
 }

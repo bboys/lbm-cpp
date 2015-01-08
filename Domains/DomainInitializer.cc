@@ -15,12 +15,18 @@ namespace Domains {
     std::unique_ptr<Domain> DomainInitializer::domain()
     {
         createNodes();
-        createBoundaryNodes();
         // Return the given domain
         std::unique_ptr<Domain> domain(new Domain);
-        domain->nodes   = std::move(d_nodes);
+        domain->nodes = std::move(d_nodes);
+
+        // Now that we've moved the nodes to our domain object, we can create post
+        // processors which can point to these nodes
+        createBoundaryNodes(domain->nodes);
+
+        //domain->post_processors = std::move(std::vector<PostProcessor *> d_post_processors);
         domain->b_nodes = std::move(d_b_nodes);
         domain->set     = d_set;
+
         return domain;
     }
 
@@ -104,7 +110,7 @@ namespace Domains {
         }
     }
 
-    void DomainInitializer::createBoundaryNodes()
+    void DomainInitializer::createBoundaryNodes(std::vector<Node> &nodes)
     {
 
     }
