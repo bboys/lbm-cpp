@@ -12,6 +12,8 @@
 // #include "Reporting/MatlabReporter.h"
 #include "Reporting/reporting.h"
 
+#include "LBM/Simulation.h"
+
 int main(int argc, char **argv);
 
 #endif
