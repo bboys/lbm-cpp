@@ -22,6 +22,8 @@ namespace LBM {
     {
         report();
         stream(d_domain->set, d_domain->nodes);
+        collission(d_domain->set, d_domain->nodes);
+        report();
     }
 
     void Simulation::stream(VelocitySet &set, std::vector<Node> &nodes)
@@ -39,12 +41,40 @@ namespace LBM {
 
     void Simulation::collission(VelocitySet &set, std::vector<Node> &nodes)
     {
+        for (auto node : nodes)
+        {
+            size_t nDirections = set.nDirections;
+            // switch to the newly streamed distribution values
+            for (size_t dir = 0; dir < nDirections; ++dir)
+            {
+                node.distributions[dir].value = node.distributions[dir].nextValue;
+                node.distributions[dir].nextValue = 0;
+            }
+            // TODO: make dependent on either velocity set, or domain problem
+            // TODO : get omega / relaxation from domain
+            double RE = 25;
+            double u_x = 0.05;
+            double dx = 100;
+            double omega = 1.0 / (3 * u_x * dx / RE + 0.5);
 
+            // apply BGK approximation
+            double * node_equilibrium = equilibrium(set, node);
+            for (size_t dir = 0; dir < nDirections; ++dir)
+                node.distributions[dir].value = node.distributions[dir].value - omega *
+                    (node.distributions[dir].value - node_equilibrium[dir]);
+
+            delete[] node_equilibrium;
+        }
     }
 
     void Simulation::report()
     {
         for (auto node : d_domain->nodes)
             ::Reporting::reportOnDistributions(d_domain->set, node);
+    }
+
+    void postStreamProcess()
+    {
+
     }
 }
