@@ -1,7 +1,7 @@
 #include "test.h"
 
 using namespace Reporting;
-using namespace VelocitySets::D2Q9;
+using namespace VelocitySets::OLD::D2Q9;
 using namespace Domains;
 
 void testDomain(DomainInitializer *initializer)
@@ -13,7 +13,7 @@ void testDomain(DomainInitializer *initializer)
 
 int main(int argc, char **argv)
 {
-    VelocitySet set;
+    ::VelocitySet set;
     initializeVelocitySet(set);
     std::vector<size_t> domainSize = {3, 3};
     DomainInitializer initializer(set, domainSize);

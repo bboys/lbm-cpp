@@ -1,6 +1,6 @@
 #include "LidDrivenCavity.h"
 
-using namespace VelocitySets::D2Q9;
+using namespace VelocitySets::OLD::D2Q9;
 using namespace Reporting;
 
 /*
@@ -337,7 +337,7 @@ namespace Domains {
                 node.distributions[dir].neighbour = nullptr;
             else if (isBounceBack(neighbour))
             {
-                size_t op_dir = ::VelocitySets::D2Q9::oppositeDirectionOf(dir);
+                size_t op_dir = ::VelocitySets::OLD::D2Q9::oppositeDirectionOf(dir);
                 node.distributions[dir].neighbour = &node.distributions[op_dir].nextValue;
             }
             else

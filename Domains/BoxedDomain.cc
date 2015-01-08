@@ -23,7 +23,7 @@ namespace Domains {
 
             if (isBounceBack(neighbour))
             {
-                size_t op_dir = ::VelocitySets::D2Q9::oppositeDirectionOf(dir);
+                size_t op_dir = ::VelocitySets::OLD::D2Q9::oppositeDirectionOf(dir);
                 node.distributions[dir].neighbour = &node.distributions[op_dir].nextValue;
             }
             else

@@ -3,21 +3,21 @@
 
 #include "VelocitySet.h"
 
-// namespace VelocitySets {
-//     class D2Q9 : VelocitySet
-//     {
-//         public:
-//             D2Q9();
-//             ~D2Q9();
+namespace VelocitySets {
+    class D2Q9 : VelocitySet
+    {
+        public:
+            D2Q9();
+            ~D2Q9();
 
-//     };
-// }
+    };
+}
 
 struct VelocitySet;
 
-namespace VelocitySets { namespace D2Q9 {
-    void initializeVelocitySet(VelocitySet &set);
+namespace VelocitySets { namespace OLD { namespace D2Q9 {
+    void initializeVelocitySet(::VelocitySet &set);
     size_t oppositeDirectionOf(size_t dir);
-}}
+}}}
 
 #endif

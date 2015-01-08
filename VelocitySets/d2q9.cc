@@ -1,6 +1,6 @@
 #include "d2q9.h"
 
-namespace VelocitySets { namespace D2Q9 {
+namespace VelocitySets { namespace OLD { namespace D2Q9 {
 
     size_t oppositeDirectionOf(size_t dir)
     {
@@ -19,7 +19,7 @@ namespace VelocitySets { namespace D2Q9 {
         throw "Invalid direction";
     }
 
-    void initializeVelocitySet(VelocitySet & D2Q9)
+    void initializeVelocitySet(::VelocitySet & set)
     {
         size_t nDimensions = 2;
         size_t nDirections = 9;
@@ -50,11 +50,11 @@ namespace VelocitySets { namespace D2Q9 {
         directions[7][0] = -1;    directions[7][1] =  -1;
         directions[8][0] = 1;     directions[8][1] =   -1;
 
-        D2Q9.weights    = weights;
-        D2Q9.directions = directions;
-        D2Q9.nDimensions = nDimensions;
-        D2Q9.nDirections = nDirections;
-        D2Q9.speedOfSoundSquared = 1.0 / 3.0;
+        set.weights    = weights;
+        set.directions = directions;
+        set.nDimensions = nDimensions;
+        set.nDirections = nDirections;
+        set.speedOfSoundSquared = 1.0 / 3.0;
 
         // std::cout << "This velocity set has " << D2Q9.nDimensions << " dimensions and "
         //         << D2Q9.nDirections << " directions and speed of sound squared: "
@@ -63,7 +63,7 @@ namespace VelocitySets { namespace D2Q9 {
         // for (size_t i = 0; i < nDirections; ++i)
         //     std::cout << D2Q9.weights[i] << ',' << D2Q9.directions[i][0] << ',' << D2Q9.directions[i][1] << '\n';
     }
-}}
+}}}
 
 // namespace VelocitySets {
 //     D2Q9::D2Q9()
