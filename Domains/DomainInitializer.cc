@@ -27,6 +27,11 @@ namespace Domains {
         domain->b_nodes = std::move(d_b_nodes);
         domain->set     = d_set;
 
+        double RE = 25;
+        double u_x = 0.05;
+        double omega = 1.0 / (3 * u_x * d_domain_size[0] / RE + 0.5);
+        domain->omega = omega;
+
         return domain;
     }
 

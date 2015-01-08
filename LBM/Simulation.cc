@@ -41,6 +41,7 @@ namespace LBM {
 
     void Simulation::collission(VelocitySet &set, std::vector<Node> &nodes)
     {
+        double omega = d_domain->omega;
         for (auto node : nodes)
         {
             size_t nDirections = set.nDirections;
@@ -50,12 +51,6 @@ namespace LBM {
                 node.distributions[dir].value = node.distributions[dir].nextValue;
                 node.distributions[dir].nextValue = 0;
             }
-            // TODO: make dependent on either velocity set, or domain problem
-            // TODO : get omega / relaxation from domain
-            double RE = 25;
-            double u_x = 0.05;
-            double dx = 100;
-            double omega = 1.0 / (3 * u_x * dx / RE + 0.5);
 
             // apply BGK approximation
             double * node_equilibrium = equilibrium(set, node);
