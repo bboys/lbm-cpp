@@ -25,15 +25,15 @@ namespace VelocitySets { namespace D2Q9 {
         size_t nDirections = 9;
 
         double *weights = new double[nDirections];
-        weights[0] = 4.0 / 9;
-        weights[1] = 1.0 / 9;
-        weights[2] = 1.0 / 9;
-        weights[3] = 1.0 / 9;
-        weights[4] = 1.0 / 9;
-        weights[5] = 1.0 / 36;
-        weights[6] = 1.0 / 36;
-        weights[7] = 1.0 / 36;
-        weights[8] = 1.0 / 36;
+        weights[0] = 4.0 / 9.0;
+        weights[1] = 1.0 / 9.0;
+        weights[2] = 1.0 / 9.0;
+        weights[3] = 1.0 / 9.0;
+        weights[4] = 1.0 / 9.0;
+        weights[5] = 1.0 / 36.0;
+        weights[6] = 1.0 / 36.0;
+        weights[7] = 1.0 / 36.0;
+        weights[8] = 1.0 / 36.0;
 
         int **directions = new int*[nDirections];
         for(size_t i = 0; i < nDirections; ++i)

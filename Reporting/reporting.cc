@@ -13,20 +13,20 @@ namespace Reporting {
             << "Grid size " << dx << "x" << dy
             << '\n' << '\n';
         // Shows a grid of letters representing the type of each node
-        for (size_t y = dy; y--;)
-        {
-            for (size_t x = 0; x < dx; ++x)
-            {
-                size_t idx = x + dx * y;
-                if (nodes[idx].type == NodeType::ZouHe)
-                    std::cout << 'Z';
-                else if (nodes[idx].type == NodeType::BounceBack)
-                    std::cout << 'B';
-                else
-                    std::cout << '.';
-            }
-            std::cout << '\n';
-        }
+        // for (size_t y = dy; y--;)
+        // {
+        //     for (size_t x = 0; x < dx; ++x)
+        //     {
+        //         size_t idx = x + dx * y;
+        //         if (nodes[idx].type == NodeType::ZouHe)
+        //             std::cout << 'Z';
+        //         else if (nodes[idx].type == NodeType::BounceBack)
+        //             std::cout << 'B';
+        //         else
+        //             std::cout << '.';
+        //     }
+        //     std::cout << '\n';
+        // }
     }
 
     void reportOnNode(VelocitySet &set, Node &node)
@@ -35,7 +35,6 @@ namespace Reporting {
         double *node_velocity = velocity(set, node);
 
         size_t nDimensions = set.nDimensions;
-
         // show position
         std::cout << "(";
         for (size_t dir = 0; dir < nDimensions; ++dir)
@@ -53,12 +52,15 @@ namespace Reporting {
     {
         size_t nDirections = set.nDirections;
 
+
         std::cout << "Current: \n(";
+        std::cout << node.position[0] << ", " << node.position[1] << "), (";
         for (size_t dir = 0; dir < nDirections; ++dir)
             std::cout << node.distributions[dir].value << ", ";
         std::cout << ")" << '\n';
 
         std::cout << "Next: \n(";
+        std::cout << node.position[0] << ", " << node.position[1] << "), (";
         for (size_t dir = 0; dir < nDirections; ++dir)
             std::cout << node.distributions[dir].nextValue << ", ";
         std::cout << ")" << '\n';
@@ -91,22 +93,22 @@ namespace Reporting {
 
 
         double total_density = 0;
-        for (size_t idx = 0; idx < totalNodes; ++idx)
-            total_density += density(set, nodes[idx]);
-
-        std::cout << "Total density: " << total_density << '\n';
-
         size_t nDimensions = set.nDimensions;
         double *total_velocity = new double[nDimensions]();
-
         for (size_t idx = 0; idx < totalNodes; ++idx)
         {
+            total_density += density(set, nodes[idx]);
+
             double *node_velocity = velocity(set, nodes[idx]);
             for (size_t dim = 0; dim < nDimensions; ++dim)
                 total_velocity[dim] += node_velocity[dim];
 
             delete[] node_velocity;
         }
+
+        std::cout << "Total density: " << total_density << '\n';
+
+
         return;
         std::cout << "Total velocity: ";
         for (size_t dim = 0; dim < nDimensions; ++dim)

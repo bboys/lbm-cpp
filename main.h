@@ -21,26 +21,12 @@
 #include "VelocitySets/d2q9.h"
 #include "Reporting/MatlabReporter.h"
 
-// struct BounceBack;
-// struct Periodic;
-// struct Source;
-// struct Node;
+#include "VelocitySets/VelocitySet.h"
+#include "LBM/node.h"
 
 // enum class Direction {
 //     N, NE, E, S, SE, SW, W, NW
 // };
-
-// // struct ZouHe;
-// struct ZouHe {
-//     Direction direction;
-//     // enum type {
-//     //     velocity,
-//     //     density
-//     // },
-//     // enum value {
-//     //     density,
-//     //     double *velocity
-//     // },
 
 // };
 // enum ZouHe {
@@ -52,39 +38,10 @@ struct StreamAble; // A structure to which we can stream,
 // node on another processor
 */
 
-
-// A velocity set is a set of vectors with each having an associated weight
-struct VelocitySet
-{
-    double *weights;
-    int **directions;
-    size_t nDirections;
-    size_t nDimensions;
-    double speedOfSoundSquared;
-};
-
-struct Distribution
-{
-    double value;
-    double nextValue;
-    double * neighbour; // stream_destination , should point to Distribution.value
-};
-
-struct Node
-{
-    NodeType type;
-    Distribution *distributions;
-    size_t *position;
-};
-
 int main(int argc, char **argv);
 void stream(VelocitySet &set, Node *nodes, size_t totalNodes);
 
 void collision(VelocitySet &set, Node *nodes, size_t totalNodes);
 void collideNode(VelocitySet &set, Node &node);
-
-double *equilibrium(VelocitySet &set, Node node);
-double *velocity(VelocitySet &set, Node node);
-double density(VelocitySet &set, Node node);
 
 #endif

@@ -45,10 +45,10 @@ namespace Domains { namespace Periodic {
 
         // note: this is not the right place for this. BounceBack nodes should not be included in storage since we use pointers
         // to stream
-        if (bounceback(x, y, dx, dy))
-            nodes[idx].type = NodeType::BounceBack;
-        else
-            nodes[idx].type = NodeType::Cell;
+        // if (bounceback(x, y, dx, dy))
+        //     nodes[idx].type = NodeType::BounceBack;
+        // else
+        //     nodes[idx].type = NodeType::Cell;
 
         for (size_t dir = 0; dir < nDirections; ++dir)
         {
