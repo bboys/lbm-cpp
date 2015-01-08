@@ -1,4 +1,5 @@
 *.o
 *.d
 main
+test
 logs/
