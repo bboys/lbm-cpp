@@ -6,7 +6,6 @@
 #include <fstream>
 
 using namespace Domains::LidDrivenCavity;
-// using namespace Domains::Periodic;
 using namespace Reporting;
 
 const std::string outputFileName = "logs/test8.txt";
