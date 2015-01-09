@@ -1,7 +1,7 @@
 #include "BoxedDomain.h"
 
 namespace Domains {
-    BoxedDomain::BoxedDomain(VelocitySet &set, std::vector<size_t> domainSize)
+    BoxedDomain::BoxedDomain(VelocitySet *set, std::vector<size_t> domainSize)
     :
         DomainInitializer(set, domainSize)
     {}
@@ -11,19 +11,19 @@ namespace Domains {
 
     void BoxedDomain::connectNodeToNeighbours(Node &node)
     {
-        size_t nDirections = d_set.nDirections;
+        size_t nDirections = d_set->nDirections;
 
         for (size_t dir = 0; dir < nDirections; ++dir)
         {
             std::vector<int> neighbour;
             for (size_t dim = 0; dim < d_domain_size.size(); ++dim)
                 neighbour.push_back(
-                    node.position[dim] + d_set.directions[dir][dim]
+                    node.position[dim] + d_set->direction(dir)[dim]
                 );
 
             if (isBounceBack(neighbour))
             {
-                size_t op_dir = ::VelocitySets::OLD::D2Q9::oppositeDirectionOf(dir);
+                size_t op_dir =d_set->oppositeDirectionOf(dir);
                 node.distributions[dir].neighbour = &node.distributions[op_dir].nextValue;
             }
             else

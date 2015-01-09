@@ -4,20 +4,24 @@
 #include <cstring>
 #include <vector>
 
-namespace VelocitySets {
+// namespace VelocitySets {
     class VelocitySet
     {
-        std::vector<double> d_weights;
-        std::vector<std::vector<int>> d_directions;
-        double d_speed_of_sound_squared;
+        protected:
+            std::vector<double> d_weights;
+            std::vector<std::vector<int>> d_directions;
+            double d_speed_of_sound_squared;
 
         public:
-            VelocitySet();
+            size_t const nDirections;
+            size_t const nDimensions;
+
+            VelocitySet(size_t nDirections, size_t nDimensions);
             virtual ~VelocitySet();
             double weight(size_t);
             std::vector<int> direction(size_t);
             double speedOfSoundSquared();
-            virtual size_t oppositeDirectionOf(size_t dir);
+            virtual size_t oppositeDirectionOf(size_t dir) = 0;
     };
 
     inline double VelocitySet::weight(size_t idx)
@@ -30,20 +34,15 @@ namespace VelocitySets {
         return d_directions[idx];
     }
 
+    // inline size_t VelocitySet::nDirections()
+    // {
+    //     return d_directions.size();
+    // }
+
     inline double VelocitySet::speedOfSoundSquared()
     {
         return d_speed_of_sound_squared;
     }
-}
-
-// A velocity set is a set of vectors with each having an associated weight
-struct VelocitySet
-{
-    double *weights;
-    int **directions;
-    size_t nDirections;
-    size_t nDimensions;
-    double speedOfSoundSquared;
-};
+// }
 
 #endif

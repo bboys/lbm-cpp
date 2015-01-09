@@ -8,7 +8,7 @@ namespace Domains {
     class BoxedDomain : public DomainInitializer {
 
         public:
-            BoxedDomain(VelocitySet &set, std::vector<size_t> domainSize);
+            BoxedDomain(VelocitySet *set, std::vector<size_t> domainSize);
             ~BoxedDomain();
 
         protected:

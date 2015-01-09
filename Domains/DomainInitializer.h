@@ -14,7 +14,7 @@
 namespace Domains {
     class DomainInitializer {
         protected:
-            VelocitySet &d_set;
+            VelocitySet *d_set;
             std::vector<size_t> d_domain_size;
 
             // hashIdx -> nodeIdx
@@ -23,7 +23,7 @@ namespace Domains {
             std::vector<BoundaryNode> d_b_nodes;
 
         public:
-            DomainInitializer(VelocitySet &set, std::vector<size_t> domainSize);
+            DomainInitializer(VelocitySet *set, std::vector<size_t> domainSize);
             virtual ~DomainInitializer();
             std::unique_ptr<Domain> domain();
 

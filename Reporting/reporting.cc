@@ -5,11 +5,13 @@
 #include <limits>
 #include <fstream>
 
+#include "MatlabReporter.h"
+
 namespace Reporting {
 
-    void reportOnInitialSetup(VelocitySet &set, Node *nodes, size_t dx, size_t dy)
+    void reportOnInitialSetup(VelocitySet *set, Node *nodes, size_t dx, size_t dy)
     {
-        std::cout << "LBM D" << set.nDimensions << "Q" << set.nDirections << " simulation." << '\n'
+        std::cout << "LBM D" << set->nDimensions << "Q" << set->nDirections << " simulation." << '\n'
             << "Grid size " << dx << "x" << dy
             << '\n' << '\n';
         // Shows a grid of letters representing the type of each node
@@ -29,12 +31,12 @@ namespace Reporting {
         // }
     }
 
-    void reportOnNode(VelocitySet &set, Node &node)
+    void reportOnNode(VelocitySet *set, Node &node)
     {
         double node_density = density(set, node);
         double *node_velocity = velocity(set, node);
 
-        size_t nDimensions = set.nDimensions;
+        size_t nDimensions = set->nDimensions;
         // show position
         std::cout << "(";
         for (size_t dir = 0; dir < nDimensions; ++dir)
@@ -48,9 +50,9 @@ namespace Reporting {
         delete[] node_velocity;
     }
 
-    void reportOnDistributions(VelocitySet &set, Node &node)
+    void reportOnDistributions(VelocitySet *set, Node &node)
     {
-        size_t nDirections = set.nDirections;
+        size_t nDirections = set->nDirections;
 
 
         std::cout << "Current: \n(";
@@ -66,7 +68,7 @@ namespace Reporting {
         std::cout << ")" << '\n';
     }
 
-    void report(VelocitySet &set, Node *nodes, size_t dx, size_t dy)
+    void report(VelocitySet *set, Node *nodes, size_t dx, size_t dy)
     {
         std::cout << '\n' << '\n';
         size_t totalNodes = dx * dy;
@@ -75,7 +77,7 @@ namespace Reporting {
     }
 
     // Report on the total density and the total velocity
-    void report(VelocitySet &set, Node *nodes, size_t totalNodes)
+    void report(VelocitySet *set, Node *nodes, size_t totalNodes)
     {
         /*
         for (size_t p = 0; p < totalProcessors; ++p)
@@ -93,7 +95,7 @@ namespace Reporting {
 
 
         double total_density = 0;
-        size_t nDimensions = set.nDimensions;
+        size_t nDimensions = set->nDimensions;
         double *total_velocity = new double[nDimensions]();
         for (size_t idx = 0; idx < totalNodes; ++idx)
         {
@@ -118,7 +120,7 @@ namespace Reporting {
         delete[] total_velocity;
     }
 
-    void report(std::string outputFileName, VelocitySet &set, Node *nodes, size_t totalNodes)
+    void report(std::string outputFileName, VelocitySet *set, Node *nodes, size_t totalNodes)
     {
         std::ofstream out(outputFileName, std::ios::out | std::ios::app);
         Reporting::MatlabReporter reporter(out);

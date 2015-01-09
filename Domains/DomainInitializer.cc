@@ -3,7 +3,7 @@
 
 namespace Domains {
 
-    DomainInitializer::DomainInitializer(VelocitySet &set, std::vector<size_t> domainSize)
+    DomainInitializer::DomainInitializer(VelocitySet *set, std::vector<size_t> domainSize)
     :
         d_set(set),
         d_domain_size(domainSize)
@@ -70,8 +70,8 @@ namespace Domains {
 
     Node DomainInitializer::initializeNodeAt(std::vector<int> position)
     {
-        size_t nDirections = d_set.nDirections;
-        size_t nDimensions = d_set.nDimensions;
+        size_t nDirections = d_set->nDirections;
+        size_t nDimensions = d_set->nDimensions;
 
         Node node;
 
@@ -84,8 +84,8 @@ namespace Domains {
         Distribution *distributions = new Distribution[nDirections];
         for (size_t dir = 0; dir < nDirections; ++dir)
         {
-            distributions[dir].value     = d_set.weights[dir];
-            distributions[dir].nextValue = d_set.weights[dir];
+            distributions[dir].value     = d_set->weight(dir);
+            distributions[dir].nextValue = d_set->weight(dir);
 
             // Commented distributions are here for easy testing purposes
             distributions[dir].value     = d_nodes.size() * 10 + dir;
@@ -98,7 +98,7 @@ namespace Domains {
 
     void DomainInitializer::connectNodeToNeighbours(Node &node)
     {
-        size_t nDirections = d_set.nDirections;
+        size_t nDirections = d_set->nDirections;
 
         for (size_t dir = 0; dir < nDirections; ++dir)
         {
@@ -106,7 +106,7 @@ namespace Domains {
             for (size_t dim = 0; dim < d_domain_size.size(); ++dim)
             {
                 neighbour.push_back((
-                    node.position[dim] + d_set.directions[dir][dim] + d_domain_size[dim]
+                    node.position[dim] + d_set->direction(dir)[dim] + d_domain_size[dim]
                 ) % d_domain_size[dim]);
             }
             size_t neighbour_idx = idxOf(neighbour);

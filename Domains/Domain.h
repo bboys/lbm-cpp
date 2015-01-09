@@ -9,7 +9,7 @@ struct Domain {
     std::vector<Node> nodes;
     // Change this to PostProcessor *
     std::vector<BoundaryNode> b_nodes;
-    VelocitySet set;
+    VelocitySet *set;
     double omega;
     // Pherhaps here some messengers? for parallel programming
 };

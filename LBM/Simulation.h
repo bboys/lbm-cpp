@@ -16,9 +16,9 @@ namespace LBM {
             void run();
 
         private:
-            void stream(VelocitySet &set, std::vector<Node> &nodes);
+            void stream(VelocitySet *set, std::vector<Node> &nodes);
             void postStreamProcess();
-            void collission(VelocitySet &set, std::vector<Node> &nodes);
+            void collission(VelocitySet *set, std::vector<Node> &nodes);
             void report();
 
     };

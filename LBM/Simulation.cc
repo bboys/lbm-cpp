@@ -22,13 +22,13 @@ namespace LBM {
     {
         report();
         stream(d_domain->set, d_domain->nodes);
-        collission(d_domain->set, d_domain->nodes);
         report();
+        collission(d_domain->set, d_domain->nodes);
     }
 
-    void Simulation::stream(VelocitySet &set, std::vector<Node> &nodes)
+    void Simulation::stream(VelocitySet *set, std::vector<Node> &nodes)
     {
-        size_t nDirections = set.nDirections;
+        size_t nDirections = set->nDirections;
 
         // Stream each distribution to the neighbouring nodes
         // since neighbour is a pointer to a boolean we only have to assign a new value
@@ -39,12 +39,12 @@ namespace LBM {
                     *nodes[idx].distributions[dir].neighbour = nodes[idx].distributions[dir].value;
     }
 
-    void Simulation::collission(VelocitySet &set, std::vector<Node> &nodes)
+    void Simulation::collission(VelocitySet *set, std::vector<Node> &nodes)
     {
         double omega = d_domain->omega;
         for (auto node : nodes)
         {
-            size_t nDirections = set.nDirections;
+            size_t nDirections = set->nDirections;
             // switch to the newly streamed distribution values
             for (size_t dir = 0; dir < nDirections; ++dir)
             {

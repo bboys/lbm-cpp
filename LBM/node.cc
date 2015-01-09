@@ -1,20 +1,20 @@
 #include "node.h"
 
 // Computes the total density on a node
-double density(VelocitySet &set, Node node)
+double density(VelocitySet *set, Node node)
 {
     double density = 0;
-    for (size_t dir = 0; dir < set.nDirections; ++dir)
+    for (size_t dir = 0; dir < set->nDirections; ++dir)
         density += node.distributions[dir].value;
 
     return density;
 }
 
 // Computes the projected velocity in each dimension
-double *velocity(VelocitySet &set, Node node)
+double *velocity(VelocitySet *set, Node node)
 {
-    size_t nDirections = set.nDirections;
-    size_t nDimensions = set.nDimensions;
+    size_t nDirections = set->nDirections;
+    size_t nDimensions = set->nDimensions;
     double nodeDensity = density(set, node);
     double *velocity = new double[nDimensions]();
 
@@ -24,7 +24,7 @@ double *velocity(VelocitySet &set, Node node)
     {
         double distribution = node.distributions[dir].value;
         for (size_t dim = 0; dim < nDimensions; ++dim)
-            velocity[dim] += distribution * set.weights[dir] * set.directions[dir][dim];
+            velocity[dim] += distribution * set->weight(dir) * set->direction(dir)[dim];
     }
 
     for (size_t dim = 0; dim < nDimensions; ++dim)
@@ -33,11 +33,11 @@ double *velocity(VelocitySet &set, Node node)
     return velocity;
 }
 
-double *equilibrium(VelocitySet &set, Node node)
+double *equilibrium(VelocitySet *set, Node node)
 {
-    size_t nDirections = set.nDirections;
-    size_t nDimensions = set.nDimensions;
-    double speedOfSoundSquared = set.speedOfSoundSquared;
+    size_t nDirections = set->nDirections;
+    size_t nDimensions = set->nDimensions;
+    double speedOfSoundSquared = set->speedOfSoundSquared();
     double node_density = density(set, node);
     double *node_velocity = velocity(set, node);
 
@@ -52,10 +52,10 @@ double *equilibrium(VelocitySet &set, Node node)
     {
         double cu = 0;
         for (size_t dim = 0; dim < nDimensions; ++dim)
-            cu = set.directions[dir][dim] * node_velocity[dim];
+            cu = set->direction(dir)[dim] * node_velocity[dim];
         cu /= speedOfSoundSquared;
 
-        equilibrium[dir] = node_density * set.weights[dir] * (
+        equilibrium[dir] = node_density * set->weight(dir) * (
             1.0 +
             cu +
             0.5 * cu * cu -

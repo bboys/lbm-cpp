@@ -17,8 +17,8 @@ struct Node
     size_t *position;
 };
 
-double *equilibrium(VelocitySet &set, Node node);
-double *velocity(VelocitySet &set, Node node);
-double density(VelocitySet &set, Node node);
+double *equilibrium(VelocitySet *set, Node node);
+double *velocity(VelocitySet *set, Node node);
+double density(VelocitySet *set, Node node);
 
 #endif
