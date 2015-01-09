@@ -88,8 +88,8 @@ namespace Domains {
             distributions[dir].nextValue = d_set->weight(dir);
 
             // Commented distributions are here for easy testing purposes
-            distributions[dir].value     = d_nodes.size() * 10 + dir;
-            distributions[dir].nextValue = -1;
+            // distributions[dir].value     = d_nodes.size() * 10 + dir;
+            // distributions[dir].nextValue = -1;
         }
         node.distributions = distributions;
 

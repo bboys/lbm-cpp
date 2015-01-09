@@ -5,6 +5,10 @@
 #include "../VelocitySets/VelocitySet.h"
 #include "node.h"
 
+
+#include "../Reporting/reporting.h"
+#include "../Reporting/MatlabReporter.h"
+
 namespace LBM {
     class Simulation
     {
@@ -14,6 +18,7 @@ namespace LBM {
             Simulation(Domains::DomainInitializer *initializer);
             ~Simulation();
             void run();
+            void report(::Reporting::MatlabReporter reporter);
 
         private:
             void stream(VelocitySet *set, std::vector<Node> &nodes);

@@ -20,6 +20,12 @@ namespace Reporting {
             showNode(set, nodes[idx]);
     }
 
+    void MatlabReporter::reportOnTimeStep(VelocitySet *set, std::vector<Node> nodes)
+    {
+        for (auto node : nodes)
+            showNode(set, node);
+    }
+
     void MatlabReporter::showVector(double *vector, size_t nDimensions)
     {
         for (size_t dim = 0; dim < (nDimensions - 1); ++dim)

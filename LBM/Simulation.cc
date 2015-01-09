@@ -1,7 +1,6 @@
 #include "Simulation.h"
 
 #include "node.h"
-#include "../Reporting/reporting.h"
 
 namespace LBM {
     Simulation::Simulation(Domains::DomainInitializer *initializer)
@@ -20,9 +19,9 @@ namespace LBM {
 
     void Simulation::run()
     {
-        report();
+        // report();
         stream(d_domain->set, d_domain->nodes);
-        report();
+        // report();
         collission(d_domain->set, d_domain->nodes);
     }
 
@@ -62,14 +61,19 @@ namespace LBM {
         }
     }
 
+    void postStreamProcess()
+    {
+
+    }
+
     void Simulation::report()
     {
         for (auto node : d_domain->nodes)
             ::Reporting::reportOnDistributions(d_domain->set, node);
     }
 
-    void postStreamProcess()
+    void Simulation::report(::Reporting::MatlabReporter reporter)
     {
-
+        reporter.reportOnTimeStep(d_domain->set, d_domain->nodes);
     }
 }

@@ -9,9 +9,7 @@ Currently only a periodic and a bounce back boundary condition have been impleme
 
 1. Add Zou He boundary condition.
 2. Rewrite how the program handles boundary conditions.
-3. Rewrite how the program handles the initialization of lattice nodes.
-4. Check if using `std::vector` instead of normal arrays decrease efficiency.
-5. Parallelize the program using BSP.
-6. Check if using objects decrease the efficiency of the program.
+3. Rewrite how the program handles the initialization of lattice nodes. (done?)
+4. Parallelize the program using BSP.
 
 This program was written as a final assignement for the [Parallel Algorithms](http://www.staff.science.uu.nl/~bisse101/Education/PA/pa.html) mastermath course.

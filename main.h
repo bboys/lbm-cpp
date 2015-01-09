@@ -16,31 +16,18 @@
 #include <iostream>
 #include <string>
 
-#include "Domains/LidDrivenCavity.h"
-#include "VelocitySets/d2q9.h"
-#include "Reporting/MatlabReporter.h"
-
+// #include "Domains/LidDrivenCavity.h"
 #include "VelocitySets/VelocitySet.h"
 #include "LBM/node.h"
+#include "VelocitySets/d2q9.h"
 
-// enum class Direction {
-//     N, NE, E, S, SE, SW, W, NW
-// };
+#include "Reporting/MatlabReporter.h"
+#include "Domains/DomainInitializer.h"
+#include "Domains/BoxedDomain.h"
 
-// };
-// enum ZouHe {
-//     N, NE, E, S, SE, SW, W, NW
-// };
-/*
-struct StreamAble; // A structure to which we can stream,
-// might be a Node, or a function to send the stream to a
-// node on another processor
-*/
+
+#include "LBM/Simulation.h"
 
 int main(int argc, char **argv);
-void stream(VelocitySet &set, Node *nodes, size_t totalNodes);
-
-void collision(VelocitySet &set, Node *nodes, size_t totalNodes);
-void collideNode(VelocitySet &set, Node &node);
 
 #endif
