@@ -9,6 +9,7 @@ namespace BoundaryConditions {
         public:
             virtual ~PostProcessor();
             virtual void process() = 0;
+            virtual void add(Node *) = 0;
     };
 }
 #endif

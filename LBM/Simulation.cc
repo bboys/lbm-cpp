@@ -1,7 +1,7 @@
 #include "Simulation.h"
 
 #include "node.h"
-
+#include <iostream>
 namespace LBM {
     Simulation::Simulation(Domains::DomainInitializer *initializer)
     :
@@ -22,6 +22,7 @@ namespace LBM {
         // report();
         stream(d_domain->set, d_domain->nodes);
         // report();
+        postStreamProcess();
         collission(d_domain->set, d_domain->nodes);
     }
 
@@ -46,10 +47,7 @@ namespace LBM {
             size_t nDirections = set->nDirections;
             // switch to the newly streamed distribution values
             for (size_t dir = 0; dir < nDirections; ++dir)
-            {
                 node.distributions[dir].value = node.distributions[dir].nextValue;
-                node.distributions[dir].nextValue = 0;
-            }
 
             // apply BGK approximation
             double * node_equilibrium = equilibrium(set, node);
@@ -61,15 +59,18 @@ namespace LBM {
         }
     }
 
-    void postStreamProcess()
+    void Simulation::postStreamProcess()
     {
-
+        for (size_t idx = 0; idx < d_domain->post_processors.size(); ++idx)
+            d_domain->post_processors[idx]->process();
     }
 
     void Simulation::report()
     {
-        for (auto node : d_domain->nodes)
-            ::Reporting::reportOnDistributions(d_domain->set, node);
+        // for (auto node : d_domain->nodes)
+        //     ::Reporting::reportOnDistributions(d_domain->set, node);
+
+        ::Reporting::report(d_domain->set, &d_domain->nodes[0], d_domain->nodes.size());
     }
 
     void Simulation::report(::Reporting::MatlabReporter reporter)

@@ -13,13 +13,14 @@ namespace BoundaryConditions {
 
         public:
             ZouHeVelocityBoundary(std::vector<double> velocity);
-            void add(Node *node);
+            virtual void add(Node *node);
     };
 
     class ZouHeVelocityNorthBoundary : public ZouHeVelocityBoundary
     {
         public:
             ZouHeVelocityNorthBoundary(std::vector<double> velocity);
+            void add(Node *node);
             void process();
     };
 

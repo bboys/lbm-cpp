@@ -1,5 +1,11 @@
 #include "LidDrivenCavity.h"
 
+#include <iostream>
+#include "../BoundaryConditions/ZouHeVelocityBoundaryCondition.h"
+
+
+using namespace BoundaryConditions;
+
 namespace Domains {
     LidDrivenCavityDomain::LidDrivenCavityDomain(VelocitySet *set, std::vector<size_t> domainSize)
     :
@@ -25,7 +31,7 @@ namespace Domains {
                     node.position[dim] + d_set->direction(dir)[dim]
                 );
 
-            if (isZouHe(position) && !pointsOutwards(neighbour))
+            if (isZouHe(position) && pointsOutwards(neighbour))
                 node.distributions[dir].neighbour = nullptr;
             else if (isBounceBack(neighbour))
             {
@@ -60,7 +66,7 @@ namespace Domains {
 
     bool LidDrivenCavityDomain::isZouHe(std::vector<int> position)
     {
-        return position[1] == 0; // top wall
+        return position[1] == d_domain_size[1]; // top wall
     }
 
     bool LidDrivenCavityDomain::pointsOutwards(std::vector<int> position)
@@ -68,13 +74,20 @@ namespace Domains {
         return position[1] < 0; // anything above our top wall is not periodic
     }
 
-    void LidDrivenCavityDomain::createBoundaryNodes(std::vector<Node> &nodes)
+    void LidDrivenCavityDomain::createPostProcessors(std::vector<Node> &nodes)
     {
+        std::vector<double> velocity = {0.05, 0};
 
-    }
+        d_post_processors.push_back(
+            std::unique_ptr<PostProcessor> (new ZouHeVelocityNorthBoundary(velocity))
+        );
 
-    BoundaryNode &LidDrivenCavityDomain::initializeBoundaryNode(Node &node)
-    {
-
+        int y = d_domain_size[1] - 1;
+        std::vector<int> position {0, y};
+        for (size_t x = 0; x < d_domain_size[0]; ++x)
+        {
+            position[0] = x;
+            d_post_processors.back()->add(&nodes[idxOf(position)]);
+        }
     }
 }

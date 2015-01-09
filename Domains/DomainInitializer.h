@@ -10,6 +10,7 @@
 #include "../VelocitySets/VelocitySet.h"
 #include "../LBM/node.h"
 #include "../BoundaryConditions/ZouHe.h"
+#include "../BoundaryConditions/PostProcessor.h"
 
 namespace Domains {
     class DomainInitializer {
@@ -19,27 +20,22 @@ namespace Domains {
 
             // hashIdx -> nodeIdx
             std::unordered_map<size_t, size_t> d_map_to_index;
+
             std::vector<Node> d_nodes;
-            std::vector<BoundaryNode> d_b_nodes;
+            std::vector<std::unique_ptr<BoundaryConditions::PostProcessor>> d_post_processors;
 
         public:
             DomainInitializer(VelocitySet *set, std::vector<size_t> domainSize);
             virtual ~DomainInitializer();
             std::unique_ptr<Domain> domain();
 
-        /*
-            For later:
-            std::vector<BoundaryNode> createBoundaryNodes(BoundaryCondition condition, std::vector<size_t> position);
-         */
-
-        // private:
         protected:
             void createNodes();
             Node initializeNodeAt(std::vector<int> position);
             virtual void connectNodeToNeighbours(Node &node);
             virtual bool isInDomain(std::vector<int> position);
-            virtual void createBoundaryNodes(std::vector<Node> &nodes);
-            virtual BoundaryNode &initializeBoundaryNode(Node &node);
+
+            virtual void createPostProcessors(std::vector<Node> &nodes);
 
             // In order to use a multi dimensional array, we actually
             // convert each vector onto a unique integer

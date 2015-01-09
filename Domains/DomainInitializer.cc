@@ -21,15 +21,18 @@ namespace Domains {
 
         // Now that we've moved the nodes to our domain object, we can create post
         // processors which can point to these nodes
-        createBoundaryNodes(domain->nodes);
+        // createBoundaryNodes(domain->nodes);
 
         //domain->post_processors = std::move(std::vector<PostProcessor *> d_post_processors);
-        domain->b_nodes = std::move(d_b_nodes);
+        createPostProcessors(domain->nodes);
+        domain->post_processors = std::move(d_post_processors);
         domain->set     = d_set;
 
-        double RE = 25;
+        double RE = 5000;
         double u_x = 0.05;
-        double omega = 1.0 / (3 * u_x * d_domain_size[0] / RE + 0.5);
+        int d_x = 1; //d_domain_size[0];
+        double omega = 1.0 / (3 * u_x * d_x / RE + 0.5);
+
         domain->omega = omega;
 
         return domain;
@@ -115,14 +118,9 @@ namespace Domains {
         }
     }
 
-    void DomainInitializer::createBoundaryNodes(std::vector<Node> &nodes)
+    void DomainInitializer::createPostProcessors(std::vector<Node> &nodes)
     {
 
-    }
-
-    BoundaryNode &DomainInitializer::initializeBoundaryNode(Node &node)
-    {
-        throw "Not implemented";
     }
 
     //
