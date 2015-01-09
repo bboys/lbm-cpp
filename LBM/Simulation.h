@@ -17,7 +17,7 @@ namespace LBM {
         public:
             Simulation(Domains::DomainInitializer *initializer);
             ~Simulation();
-            void run();
+            void step();
             void report(::Reporting::MatlabReporter reporter);
 
         private:

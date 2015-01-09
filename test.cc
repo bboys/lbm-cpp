@@ -7,7 +7,7 @@ using namespace Domains;
 void testDomain(DomainInitializer *initializer)
 {
     LBM::Simulation sim(initializer);
-    sim.run();
+    sim.step();
 }
 
 int main(int argc, char **argv)

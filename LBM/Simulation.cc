@@ -17,7 +17,7 @@ namespace LBM {
         }
     }
 
-    void Simulation::run()
+    void Simulation::step()
     {
         // report();
         stream(d_domain->set, d_domain->nodes);
