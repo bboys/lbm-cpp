@@ -7,8 +7,8 @@
 #include <sstream>      // std::stringstream
 using namespace Domains;
 
-const size_t ITERATIONS = 1000000;
-const size_t REPORT_PER_ITERATION = 50000;
+const size_t ITERATIONS = 1000;
+const size_t REPORT_PER_ITERATION = 500;
 const size_t dx = 20;
 const size_t dy = 40;
 
@@ -34,8 +34,8 @@ int main(int argc, char **argv)
     auto set = new D2Q9;
     auto domainSize = {dx, dy};
 
-    // BoxedDomain initializer(set, domainSize);
-    LidDrivenCavityDomain initializer(set, domainSize);
+    BoxedDomain initializer(set, domainSize);
+    // LidDrivenCavityDomain initializer(set, domainSize);
 
     // Create simulation
     LBM::Simulation sim(&initializer);
@@ -51,8 +51,12 @@ int main(int argc, char **argv)
             sim.report(reporter);
 
         }
-        if (iter % 1000 == 0)
-            std::cout << iter << " / " << ITERATIONS << '\n';
+        if (iter % 100 == 0)
+        {
+            double percentage = 100 * static_cast<double>(iter)/ITERATIONS;
+            std::cout << percentage << '%' << '\t';
+            sim.report();
+        }
     }
     std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << '\n';
 

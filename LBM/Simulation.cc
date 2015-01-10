@@ -19,9 +19,7 @@ namespace LBM {
 
     void Simulation::step()
     {
-        // report();
         stream(d_domain->set, d_domain->nodes);
-        // report();
         postStreamProcess();
         collission(d_domain->set, d_domain->nodes);
     }

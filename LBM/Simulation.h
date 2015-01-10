@@ -19,12 +19,12 @@ namespace LBM {
             ~Simulation();
             void step();
             void report(::Reporting::MatlabReporter reporter);
+            void report();
 
         private:
             void stream(VelocitySet *set, std::vector<Node> &nodes);
             void postStreamProcess();
             void collission(VelocitySet *set, std::vector<Node> &nodes);
-            void report();
 
     };
 }
