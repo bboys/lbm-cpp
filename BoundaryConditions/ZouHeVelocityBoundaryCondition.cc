@@ -2,26 +2,15 @@
 #include <iostream>
 
 namespace BoundaryConditions {
-    ZouHeVelocityBoundary::ZouHeVelocityBoundary(std::vector<double> velocity)
+    ZouHeVelocityBoundary::ZouHeVelocityBoundary(std::vector<double> velocity, std::vector<Node *> acts_on)
     :
+        d_acts_on(acts_on),
         d_velocity(velocity)
     {}
 
-    void ZouHeVelocityBoundary::add(Node *node)
-    {
-        d_acts_on.push_back(node);
-    }
-
-    void ZouHeVelocityNorthBoundary::add(Node *node)
-    {
-         ZouHeVelocityBoundary::add(node);
-         // set node neighbours to nullptrs
-         std::cout << d_acts_on.size() << ", ";
-    }
-
-    ZouHeVelocityNorthBoundary::ZouHeVelocityNorthBoundary(std::vector<double> velocity)
+    ZouHeVelocityNorthBoundary::ZouHeVelocityNorthBoundary(std::vector<double> velocity, std::vector<Node *> acts_on)
     :
-        ZouHeVelocityBoundary(velocity)
+        ZouHeVelocityBoundary(velocity, acts_on)
     {}
 
     void ZouHeVelocityNorthBoundary::process()

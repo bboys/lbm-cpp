@@ -28,7 +28,7 @@ namespace Domains {
         domain->post_processors = std::move(d_post_processors);
         domain->set     = d_set;
 
-        double RE = 5000;
+        double RE = 20;
         double u_x = 0.05;
         int d_x = 1; //d_domain_size[0];
         double omega = 1.0 / (3 * u_x * d_x / RE + 0.5);

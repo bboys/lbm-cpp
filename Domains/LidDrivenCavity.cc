@@ -76,18 +76,19 @@ namespace Domains {
 
     void LidDrivenCavityDomain::createPostProcessors(std::vector<Node> &nodes)
     {
-        std::vector<double> velocity = {0.05, 0};
-
-        d_post_processors.push_back(
-            std::unique_ptr<PostProcessor> (new ZouHeVelocityNorthBoundary(velocity))
-        );
-
+        // Get all Nodes that are on the moving wall
+        std::vector<Node *> acts_on;
         int y = d_domain_size[1] - 1;
         std::vector<int> position {0, y};
         for (size_t x = 0; x < d_domain_size[0]; ++x)
         {
             position[0] = x;
-            d_post_processors.back()->add(&nodes[idxOf(position)]);
+            acts_on.push_back(&nodes[idxOf(position)]);
         }
+        // Create a new post processor
+        std::vector<double> velocity = {0.05, 0};
+        d_post_processors.push_back(
+            std::unique_ptr<PostProcessor> (new ZouHeVelocityNorthBoundary(velocity, acts_on))
+        );
     }
 }
