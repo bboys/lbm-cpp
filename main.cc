@@ -26,17 +26,22 @@ std::string createFileName(size_t iteration, std::string setName, std::string do
     return ss.str();
 }
 
+void createMatlabReport(LBM::Simulation &sim, size_t iter, std::vector<size_t> domainSize)
+{
+    // Create a output file
+    std::ofstream out(createFileName(iter, "D2Q9", "TEST", domainSize), std::ios::out | std::ios::app);
+    Reporting::MatlabReporter reporter(out);
+    sim.report(reporter);
+}
+
 int main(int argc, char **argv)
 {
     auto start = std::clock();
-
     // Initialize a velocity set and a domain
     auto set = new D2Q9;
     auto domainSize = {dx, dy};
-
     BoxedDomain initializer(set, domainSize);
     // LidDrivenCavityDomain initializer(set, domainSize);
-
     // Create simulation
     LBM::Simulation sim(&initializer);
     for (size_t iter = 0; iter < ITERATIONS; ++iter)
@@ -44,13 +49,8 @@ int main(int argc, char **argv)
         sim.step();
 
         if (iter % REPORT_PER_ITERATION == 0)
-        {
-            // Create a output file
-            std::ofstream out(createFileName(iter, "D2Q9", "TEST", domainSize), std::ios::out | std::ios::app);
-            Reporting::MatlabReporter reporter(out);
-            sim.report(reporter);
+            createMatlabReport(sim, iter, domainSize);
 
-        }
         if (iter % 100 == 0)
         {
             double percentage = 100 * static_cast<double>(iter)/ITERATIONS;
@@ -60,11 +60,7 @@ int main(int argc, char **argv)
     }
     std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << '\n';
 
-    std::ofstream out(createFileName(ITERATIONS + 1, "D2Q9", "LidDriven", domainSize), std::ios::out | std::ios::app);
-    Reporting::MatlabReporter reporter(out);
-    sim.report(reporter);
-
-
+    createMatlabReport(sim, ITERATIONS + 1, domainSize);
     // TODO: make a unique pointer of the set
     delete set;
     return 0;
