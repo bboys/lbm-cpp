@@ -27,15 +27,17 @@ namespace Domains {
         createPostProcessors(domain->nodes);
         domain->post_processors = std::move(d_post_processors);
         domain->set     = d_set;
-
-        double RE = 20;
-        double u_x = 0.05;
-        int d_x = 1; //d_domain_size[0];
-        double omega = 1.0 / (3 * u_x * d_x / RE + 0.5);
-
-        domain->omega = omega;
+        domain->omega = omega();
 
         return domain;
+    }
+
+    double DomainInitializer::omega()
+    {
+        double RE = 50;
+        double u_x = 0.25;
+        int d_x = 1; //d_domain_size[0];
+        return 1.0 / (3 * u_x * d_x / RE + 0.5);
     }
 
     void DomainInitializer::createNodes()

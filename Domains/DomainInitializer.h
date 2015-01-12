@@ -31,11 +31,13 @@ namespace Domains {
 
         protected:
             void createNodes();
-            Node initializeNodeAt(std::vector<int> position);
+            virtual Node initializeNodeAt(std::vector<int> position);
             virtual void connectNodeToNeighbours(Node &node);
             virtual bool isInDomain(std::vector<int> position);
 
             virtual void createPostProcessors(std::vector<Node> &nodes);
+
+            virtual double omega();
 
             // In order to use a multi dimensional array, we actually
             // convert each vector onto a unique integer
