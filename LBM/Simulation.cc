@@ -20,6 +20,7 @@ namespace LBM {
     void Simulation::step()
     {
         stream(d_domain->set, d_domain->nodes);
+        // communicate()
         postStreamProcess();
         collission(d_domain->set, d_domain->nodes);
     }
@@ -48,10 +49,10 @@ namespace LBM {
                 node.distributions[dir].value = node.distributions[dir].nextValue;
 
             // apply BGK approximation
-            double * node_equilibrium = equilibrium(set, node);
+            auto node_equilibrium = equilibrium(set, node);
             for (size_t dir = 0; dir < nDirections; ++dir)
-                node.distributions[dir].value = node.distributions[dir].value - omega *
-                    (node.distributions[dir].value - node_equilibrium[dir]);
+                node.distributions[dir].value = node.distributions[dir].value -
+                    omega * (node.distributions[dir].value - node_equilibrium[dir]);
 
             delete[] node_equilibrium;
         }

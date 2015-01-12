@@ -15,7 +15,7 @@
         d_weights.push_back(1.0 / 36.0);
         d_weights.push_back(1.0 / 36.0);
 
-        //                 x                           y                    z?
+        // x, y
         d_directions.push_back(std::vector<int> { 0,  0});
         d_directions.push_back(std::vector<int> { 1,  0});
         d_directions.push_back(std::vector<int> { 0,  1});

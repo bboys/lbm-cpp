@@ -41,6 +41,9 @@ double *equilibrium(VelocitySet *set, Node node)
     double node_density = density(set, node);
     double *node_velocity = velocity(set, node);
 
+    // for incompressible flow (?)
+    // double initiali_density = 1.0;
+
     // Pre calculate the speed of the node
     double speedSquared = 0;
     for (size_t dim = 0; dim < nDimensions; ++dim)
@@ -55,12 +58,22 @@ double *equilibrium(VelocitySet *set, Node node)
             cu = set->direction(dir)[dim] * node_velocity[dim];
         cu /= speedOfSoundSquared;
 
+        // compressible
         equilibrium[dir] = node_density * set->weight(dir) * (
             1.0 +
             cu +
             0.5 * cu * cu -
             speedSquared
         );
+
+        // incompressible (?)
+        // equilibrium[dir] = set->weight(dir) * (
+        //     node_density + initiali_density * (
+        //         cu +
+        //         0.5 * cu * cu -
+        //         speedSquared
+        //     )
+        // );
     }
 
     delete[] node_velocity;
