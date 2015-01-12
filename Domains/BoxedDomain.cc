@@ -1,9 +1,13 @@
 #include "BoxedDomain.h"
 
+extern "C" {
+    #include "mcbsp.h"
+}
+
 namespace Domains {
-    BoxedDomain::BoxedDomain(VelocitySet *set, std::vector<size_t> domainSize)
+    BoxedDomain::BoxedDomain(VelocitySet *set, std::vector<size_t> domainSize, size_t p, size_t totalProcessors)
     :
-        DomainInitializer(set, domainSize)
+        DomainInitializer(set, domainSize, p, totalProcessors)
     {}
 
     BoxedDomain::~BoxedDomain()
@@ -27,11 +31,51 @@ namespace Domains {
                 node.distributions[dir].neighbour = &node.distributions[op_dir].nextValue;
             }
             else
-            {
-                size_t neighbour_idx = idxOf(neighbour);
-                node.distributions[dir].neighbour = &d_nodes[neighbour_idx].distributions[dir].nextValue;
-            }
+                node.distributions[dir].neighbour = destination(neighbour, dir);
+            sendLocationOfDistribution(node, dir);
         }
+    }
+
+    // get the node pointing to this distribution and if it is not in
+    // the current processor, then send the source of this distribution
+    // to that processor
+    void BoxedDomain::sendLocationOfDistribution(Node &node, size_t dir)
+    {
+        std::vector<int> neighbour;
+        for (size_t dim = 0; dim < d_domain_size.size(); ++dim)
+        {
+            // get the neighbour in this direction, using periodic boundary
+            neighbour.push_back(node.position[dim] - d_set->direction(dir)[dim]);
+        }
+
+        size_t p = processorOfNode(neighbour);
+        if (p == d_p || isBounceBack(neighbour))
+            return;
+
+        // send the destination of the distribution to the processor that streams
+        // to this distribution
+        // double *src = &node.distributions[dir].nextValue;
+
+        // tag should contain the position and direction
+        // the tag tells us where the messenger is located
+        auto tag = hashIdxOf(neighbour, dir);
+
+        // we send the local index of the node to the messenger
+        std::vector<int> position;
+        for (size_t dim = 0; dim < d_domain_size.size(); ++dim)
+            position.push_back(node.position[dim]);
+
+        size_t src = idxOf(position);
+        bsp_send(p, &tag, &src, sizeof(double *));
+    }
+
+    size_t BoxedDomain::processorOfNode(std::vector<int> position)
+    {
+        // here we might want to use a distribution creator object or something alike
+        if (position[0] < d_domain_size[0] / 2)
+            return 0;
+        else
+            return 1;
     }
 
     bool BoxedDomain::isInDomain(std::vector<int> position)

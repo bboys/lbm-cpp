@@ -17,14 +17,23 @@ namespace Domains {
     Node PointDomain::initializeNodeAt(std::vector<int> position)
     {
         Node node = DomainInitializer::initializeNodeAt(position);
-        if (position[0] == 50 && position[1] == 50)
+        if (
+            (position[0] == 10 && position[1] == 10) ||
+            (position[0] == 10 && position[1] == 30) ||
+            (position[0] == 30 && position[1] == 30) ||
+            (position[0] == 30 && position[1] == 10) ||
+            (position[0] == 5 && position[1] == 5) ||
+            (position[0] == 5 && position[1] == 25) ||
+            (position[0] == 25 && position[1] == 25) ||
+            (position[0] == 25 && position[1] == 5)
+            )
         {
             size_t nDirections = d_set->nDirections;
             // Set distributions
             for (size_t dir = 0; dir < nDirections; ++dir)
             {
-                node.distributions[dir].value *= 2.2;
-                node.distributions[dir].nextValue *= 2.2;
+                node.distributions[dir].value *= 10;
+                node.distributions[dir].nextValue *= 10;
             }
         }
         return node;
@@ -60,7 +69,11 @@ namespace Domains {
         return (
             position[0] >= 0 && position[0] < d_domain_size[0] &&
             position[1] >= 0 && position[1] < d_domain_size[1]
-        );
+        ) && true;
+        //  not (
+        //     position[0] == 65 && position[1] > 20 && position[1] < 65 ||
+        //     position[1] == 65 && position[0] > 20 && position[0] < 65
+        // );
     }
 
     bool PointDomain::isBounceBack(std::vector<int> position)

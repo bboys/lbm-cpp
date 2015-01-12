@@ -2,10 +2,10 @@ CXX = g++
 # CXXFLAGS = -Wall -std=c++11 -g
 # with -MMD creates .d files
 CXXFLAGS = -Wall -std=c++11 -MMD -g
-CXXINCL =
+CXXINCL = -I../MulticoreBSP-for-C/include
 LINKER = $(CXX)
 LDFLAGS =
-LDLIBS =
+LDLIBS = -L../MulticoreBSP-for-C/lib -lmcbsp1.2.0 -lpthread
 
 TARGET = main
 SOURCES = main.cc $(wildcard **/*.cc)

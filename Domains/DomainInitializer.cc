@@ -1,10 +1,17 @@
 #include "DomainInitializer.h"
 #include <iostream>
+#include <sstream>
+
+extern "C" {
+    #include "mcbsp.h"
+}
 
 namespace Domains {
 
-    DomainInitializer::DomainInitializer(VelocitySet *set, std::vector<size_t> domainSize)
+    DomainInitializer::DomainInitializer(VelocitySet *set, std::vector<size_t> domainSize, size_t p, size_t totalProcessors)
     :
+        d_p(p),
+        d_total_processors(totalProcessors),
         d_set(set),
         d_domain_size(domainSize)
     {}
@@ -14,20 +21,51 @@ namespace Domains {
 
     std::unique_ptr<Domain> DomainInitializer::domain()
     {
+        size_t tag_size = sizeof(size_t);
+        bsp_set_tagsize(&tag_size);
+        bsp_sync();
+
         createNodes();
         // Return the given domain
         std::unique_ptr<Domain> domain(new Domain);
         domain->nodes = std::move(d_nodes);
-
         // Now that we've moved the nodes to our domain object, we can create post
         // processors which can point to these nodes
-        // createBoundaryNodes(domain->nodes);
-
-        //domain->post_processors = std::move(std::vector<PostProcessor *> d_post_processors);
         createPostProcessors(domain->nodes);
         domain->post_processors = std::move(d_post_processors);
-        domain->set     = d_set;
+
+        domain->set    = d_set;
         domain->omega = omega();
+
+        // setup messengers
+        std::cout << "Even kijken hoeveel messengers er zijn: " << d_messengers.size() << '\n';
+
+        bsp_sync();
+        // get the destination from bsp and apply it to the appropriate messenger
+        unsigned int nmessages = 0;
+        size_t nbytes = 0;
+        bsp_qsize(&nmessages, &nbytes);
+        std::stringstream ss;
+        ss << "Processor " << d_p << " received " << nmessages << " messages totalling " << nbytes << " bytes\n";
+        for (size_t n = 0; n < nmessages; ++n)
+        {
+            size_t i;
+            size_t status;
+            size_t dest = 0;
+
+            bsp_get_tag(&status,&i);
+            if (status > 0)
+            {
+                bsp_move(&dest, status);
+                ss << "Tag with status: " << status << " length of dest: " << sizeof(dest) << " and tag: " << i << " and payload: " << dest << '\n';
+            }
+        }
+        std::cout << ss.str();
+        ss.clear();
+        ss.str("");
+
+        // puur voor mooie debug messages
+        bsp_sync();
 
         return domain;
     }
@@ -62,7 +100,7 @@ namespace Domains {
             }
 
             // Add a new node if the position is in our domain
-            if (isInDomain(position))
+            if (isInDomain(position) && processorOfNode(position) == d_p)
             {
                 d_map_to_index[idx] = d_nodes.size();
                 d_nodes.push_back(initializeNodeAt(position));
@@ -79,7 +117,6 @@ namespace Domains {
         size_t nDimensions = d_set->nDimensions;
 
         Node node;
-
         // Set position
         node.position = new size_t[nDimensions];
         for (size_t dim = 0; dim < nDimensions; ++dim)
@@ -110,14 +147,75 @@ namespace Domains {
             std::vector<int> neighbour;
             for (size_t dim = 0; dim < d_domain_size.size(); ++dim)
             {
+                // get the neighbour in this direction, using periodic boundary
                 neighbour.push_back((
                     node.position[dim] + d_set->direction(dir)[dim] + d_domain_size[dim]
                 ) % d_domain_size[dim]);
             }
-            size_t neighbour_idx = idxOf(neighbour);
 
-            node.distributions[dir].neighbour = &d_nodes[neighbour_idx].distributions[dir].nextValue;
+            node.distributions[dir].neighbour = destination(neighbour, dir);
+            sendLocationOfDistribution(node, dir);
         }
+    }
+
+    // get the node pointing to this distribution and if it is not in
+    // the current processor, then send the source of this distribution
+    // to that processor
+    void DomainInitializer::sendLocationOfDistribution(Node &node, size_t dir)
+    {
+        std::vector<int> neighbour;
+        for (size_t dim = 0; dim < d_domain_size.size(); ++dim)
+        {
+            // get the neighbour in this direction, using periodic boundary
+            neighbour.push_back((
+                node.position[dim] - d_set->direction(dir)[dim] + d_domain_size[dim]
+            ) % d_domain_size[dim]);
+        }
+
+        size_t p = processorOfNode(neighbour);
+        if (p == d_p)
+            return;
+
+        // send the destination of the distribution to the processor that streams
+        // to this distribution
+        // double *src = &node.distributions[dir].nextValue;
+
+        // tag should contain the position and direction
+        // the tag tells us where the messenger is located
+        auto tag = hashIdxOf(neighbour, dir);
+
+        // we send the local index of the node to the messenger
+        std::vector<int> position;
+        for (size_t dim = 0; dim < d_domain_size.size(); ++dim)
+            position.push_back(node.position[dim]);
+
+        size_t src = idxOf(position);
+        bsp_send(p, &tag, &src, sizeof(double *));
+    }
+
+    // Gets the
+    double *DomainInitializer::destination(std::vector<int> neighbour, size_t direction)
+    {
+        size_t p = processorOfNode(neighbour);
+        // if the node is in the current processor
+        if (p == d_p)
+        {
+            size_t neighbour_idx = idxOf(neighbour);
+            return &d_nodes[neighbour_idx].distributions[direction].nextValue;
+        }
+        // Create a new messenger and remember its location based on the
+        // position and direction of the current node
+        Messenger messenger(p, direction);
+        d_map_to_messenger[hashIdxOf(neighbour, direction)] = d_messengers.size();
+        d_messengers.push_back(messenger);
+
+        return messenger.source();
+    }
+
+    size_t DomainInitializer::processorOfNode(std::vector<int> position)
+    {
+        // here we might want to use a distribution creator object or something alike
+        return 0;
     }
 
     void DomainInitializer::createPostProcessors(std::vector<Node> &nodes)
@@ -134,7 +232,7 @@ namespace Domains {
     // Creates an hash index from a vector
     // example: given bounds [20, 30, 40], position: [4, 3, 5]
     // idx = 4 + 20 * 3 + 20 * 30 * 5
-    size_t DomainInitializer::hashIdxOf(std::vector<int> position)
+    size_t DomainInitializer::hashIdxOf(std::vector<int> position, size_t direction)
     {
         if (position.size() != d_domain_size.size())
             throw std::string("Position is not compatible with domain size");
@@ -147,6 +245,8 @@ namespace Domains {
             hashIdx += multiplier * position[dim];
             multiplier *= d_domain_size[dim];
         }
+        // If a direction was given, then we add the additional information
+        hashIdx += direction * multiplier;
 
         return hashIdx;
     }

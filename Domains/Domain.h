@@ -2,6 +2,7 @@
 #define INCLUDED_DOMAINS_DOMAIN
 
 #include "../LBM/node.h"
+#include "../LBM/Messenger.h"
 #include "../VelocitySets/VelocitySet.h"
 #include "../BoundaryConditions/BoundaryNode.h"
 #include "../BoundaryConditions/PostProcessor.h"
@@ -14,7 +15,9 @@ struct Domain {
     VelocitySet *set;
     double omega;
     std::vector<std::unique_ptr<BoundaryConditions::PostProcessor>> post_processors;
-    // Pherhaps here some messengers? for parallel programming
+
+    // maybe add an ifdef statement ?
+    std::vector<Messenger> messengers;
 };
 
 #endif
