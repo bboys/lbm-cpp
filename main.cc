@@ -15,6 +15,18 @@ size_t ITERATIONS;
 size_t REPORT_PER_ITERATION;
 size_t P;
 
+size_t askForIterations(int argc, char** argv)
+{
+    size_t iterations = 1000;
+    if (argc > 2) {
+        std::istringstream iss(argv[2]);
+        if ((iss >> iterations) )
+            return iterations;
+    }
+
+    return iterations;
+}
+
 size_t askForProcessors(int argc, char** argv)
 {
     size_t P;
@@ -51,6 +63,7 @@ std::string createFileName(size_t iteration, std::string setName, std::string do
     return ss.str();
 }
 
+
 void createMatlabReport(LBM::Simulation &sim, size_t iter, std::vector<size_t> domainSize)
 {
     // Create a output file
@@ -59,68 +72,92 @@ void createMatlabReport(LBM::Simulation &sim, size_t iter, std::vector<size_t> d
     sim.report(reporter);
 }
 
-void sim()
+void showVector(std::vector<size_t> vector, std::ofstream &out)
+{
+    for (size_t dim = 0; dim < (vector.size() - 1); ++dim)
+        out << vector[dim] << ", ";
+    out << vector[vector.size() - 1] << ")";
+}
+
+void logSimulationData(std::vector<size_t> domainSize)
+{
+    std::ofstream out("logs/timings.log", std::ios::out | std::ios::app);
+    size_t p = bsp_nprocs();
+    // Start by writing basic info to the file
+    // out << "LBM simulation using " << p <<
+    //     " processors to perform " << ITERATIONS << " iterations on the 'dummy' domain " <<
+    //     ", with set: " << "D2Q9" << " and domain size: (";
+    out << "LBM, p: " << p << ", it: " << ITERATIONS << ", ds (";
+    showVector(domainSize, out);
+    out << ", ";
+}
+
+void simulate()
 {
     bsp_begin(P);
+
     size_t p = bsp_nprocs();
     size_t s = bsp_pid();
 
-    auto start = std::clock();
+    if (s == 0)
+        logSimulationData({dx, dy});
+
+    bsp_sync();
+    double initialization_time = bsp_time();
     // Initialize a velocity set and a domain
     auto set = new D2Q9;
     auto domainSize = {dx, dy};
 
-    // LidDrivenCavityDomain initializer(set, domainSize);
-    // PointDomain initializer(set, domainSize);
-    // BoxedDomain initializer(set, domainSize, s, p);
-
-    double initialization_time = bsp_time();
+    // All domains except DomainInitializer are currently not working!
+        // LidDrivenCavityDomain initializer(set, domainSize);
+        // PointDomain initializer(set, domainSize);
+        // BoxedDomain initializer(set, domainSize, s, p);
     DomainInitializer initializer(set, domainSize, s, p);
+
     // Create simulation
     LBM::Simulation sim(&initializer);
 
+    // Log initialization time and prepare computation time
     bsp_sync();
     double current_time = bsp_time();
-
-    if (s==0)
-        std::cout << "Initialization time: " << (current_time - initialization_time) << " seconds" << '\n';
-
-    bsp_sync();
-    double process_time = bsp_time();
-    for (size_t iter = 0; iter < ITERATIONS; ++iter)
+    if (s == 0)
     {
-        if (iter % REPORT_PER_ITERATION == 0 && s == 0)
-            std::cout << 100 * static_cast<double>(iter)/ITERATIONS << '%' << '\n';
-        sim.step();
+        std::ofstream out("logs/timings.log", std::ios::out | std::ios::app);
+        // Initialization time
+        out << "IT: " << (current_time - initialization_time) << " sec, ";
     }
+    double process_time = bsp_time();
+
+    // Perform all iterations
+    for (size_t iter = 0; iter < ITERATIONS; ++iter)
+        sim.step();
+
+    // Create a timestamp
     bsp_sync();
     current_time = bsp_time();
-
-    if (s==0)
-        std::cout << "Computation time: " << (current_time - process_time) << " seconds" << '\n';
-
-    bsp_sync();
     if (s == 0)
-        std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC) << " s" << '\n';
+    {
+        std::ofstream out("logs/timings.log", std::ios::out | std::ios::app);
+        // computation time
+        out << "CT: " << (current_time - process_time) << " sec" << '\n';
+    }
 
-    // createMatlabReport(sim, ITERATIONS + 1, domainSize);
-    // TODO: make a unique pointer of the set
+    // free the velocity set (all other variables are objets which free themselves)
     delete set;
+    bsp_end();
 }
 
 int main(int argc, char **argv)
 {
-    ITERATIONS = 100;
-    REPORT_PER_ITERATION = 10;
-    dx = 10;
-    dy = 10;
+    ITERATIONS = askForIterations(argc, argv);
+    REPORT_PER_ITERATION = 1000;
+    dx = 80;
+    dy = 80;
 
-    bsp_init(sim, argc, argv);
+    bsp_init(simulate, argc, argv);
 
     P = askForProcessors(argc, argv);
-    sim();
-
-    exit(0);
+    simulate();
 
     return 0;
 }
