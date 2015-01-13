@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <limits>
 #include <fstream>
+#include <sstream>
 
 #include "MatlabReporter.h"
 
@@ -53,19 +54,28 @@ namespace Reporting {
     void reportOnDistributions(VelocitySet *set, Node &node)
     {
         size_t nDirections = set->nDirections;
+        std::stringstream ss;
 
 
-        std::cout << "Current: \n(";
-        std::cout << node.position[0] << ", " << node.position[1] << "), (";
+
+        ss << "Current:     (";
+        ss << node.position[0] << ", " << node.position[1] << "), (";
         for (size_t dir = 0; dir < nDirections; ++dir)
-            std::cout << node.distributions[dir].value << ", ";
-        std::cout << ")" << '\n';
+            ss << node.distributions[dir].value << ", ";
+        ss << ")" << '\n';
 
-        std::cout << "Next: \n(";
-        std::cout << node.position[0] << ", " << node.position[1] << "), (";
+        ss << "Next:        (";
+        ss << node.position[0] << ", " << node.position[1] << "), (";
         for (size_t dir = 0; dir < nDirections; ++dir)
-            std::cout << node.distributions[dir].nextValue << ", ";
-        std::cout << ")" << '\n';
+            ss << node.distributions[dir].nextValue << ", ";
+        ss << ")" << '\n';
+
+        ss << "Neighbour:   (";
+        ss << node.position[0] << ", " << node.position[1] << "), (";
+        for (size_t dir = 0; dir < nDirections; ++dir)
+            ss << *node.distributions[dir].neighbour << ", ";
+        ss << ")" << '\n';
+        std::cout << ss.str();
     }
 
     void report(VelocitySet *set, Node *nodes, size_t dx, size_t dy)

@@ -12,7 +12,7 @@ namespace Domains {
             ~BoxedDomain();
 
         protected:
-            void connectNodeToNeighbours(Node &node) override;
+            void connectNodeToNeighbours(size_t idx) override;
             bool isInDomain(std::vector<int> position) override;
             bool isBounceBack(std::vector<int> position);
 

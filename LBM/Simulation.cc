@@ -12,7 +12,9 @@ namespace LBM {
     Simulation::Simulation(Domains::DomainInitializer *initializer)
     :
         d_domain(initializer->domain())
-    {}
+    {
+
+    }
 
     Simulation::~Simulation()
     {
@@ -25,10 +27,33 @@ namespace LBM {
 
     void Simulation::step()
     {
+        // if (bsp_pid() == 0)
+        //     std::cout << "\n\nBefore streaming\n";
+
+        // bsp_sync();
+        // report();
+
         stream(d_domain->set, d_domain->nodes);
+        // if (bsp_pid() == 0)
+        //     std::cout << "\n\nAfter streaming\n";
+
+        // // bsp_sync();
+        // // report();
+        // // bsp_sync();
+        // std::cout << "\n\n";
         communicate(d_domain->messengers);
+        // if (bsp_pid() == 0)
+        //     std::cout << "\n\nAfter communicating\n";
+
+        // bsp_sync();
+        // report();
         postStreamProcess();
         collission(d_domain->set, d_domain->nodes);
+        // if (bsp_pid() == 0)
+        //     std::cout << "\n\nAfter collission\n\n\n";
+
+        // bsp_sync();
+        // report();
     }
 
     void Simulation::stream(VelocitySet *set, std::vector<Node> &nodes)
@@ -52,7 +77,10 @@ namespace LBM {
             size_t nDirections = set->nDirections;
             // switch to the newly streamed distribution values
             for (size_t dir = 0; dir < nDirections; ++dir)
+            {
                 node.distributions[dir].value = node.distributions[dir].nextValue;
+                node.distributions[dir].nextValue = -1;
+            }
 
             // apply BGK approximation
             auto node_equilibrium = equilibrium(set, node);
@@ -72,27 +100,83 @@ namespace LBM {
 
     void Simulation::report()
     {
-        // for (auto node : d_domain->nodes)
-        //     ::Reporting::reportOnDistributions(d_domain->set, node);
+        // for (size_t p = 0; p < bsp_nprocs(); ++p)
+        // {
+        //     if (bsp_pid() == p)
+        //     {
+        //         std::cout << "Distributions from processor " << p << '\n';
+        //         for (auto node : d_domain->nodes)
+        //             ::Reporting::reportOnDistributions(d_domain->set, node);
+        //     }
+        //     bsp_sync();
+        // }
 
         ::Reporting::report(d_domain->set, &d_domain->nodes[0], d_domain->nodes.size());
     }
 
     void Simulation::report(::Reporting::MatlabReporter reporter)
     {
-        reporter.reportOnTimeStep(d_domain->set, d_domain->nodes);
+        // reporter.reportOnTimeStep(d_domain->set, d_domain->nodes);
     }
 
     void Simulation::communicate(std::vector<Messenger> messengers)
     {
+        // we'll send both the local idx and the direction which we we'll change
+        size_t tag_size = sizeof(size_t[2]);
+        bsp_set_tagsize(&tag_size);
+        bsp_sync();
+
         std::stringstream ss;
         size_t s = bsp_pid();
         for (auto messenger : messengers)
         {
-            ss << "Message from: " << s << " to: " << messenger.processor() <<
-                " with direction: " << messenger.direction() <<
-                " to local idx: " << messenger.localIdx() << '\n';
+            ss << "Message from: " << s << " to: " << messenger.d_p <<
+                " with direction: " << messenger.d_tag[1] <<
+                " to local idx: " << messenger.d_tag[0] <<
+                " and source: " << messenger.d_src;
+            auto tag = messenger.d_tag;
+
+            ss << " with tag: " << tag[0] << ", " << tag[1] << '\n';
+            ss << "The tags have size: " << sizeof(tag[0]) << " and " << sizeof(tag[1]) << '\n';
+            bsp_send(messenger.d_p, messenger.d_tag, &messenger.d_src, sizeof(double));
         }
-        std::cout << ss.str();
+        // std::cout << ss.str();
+
+        // ss.clear();
+        // ss.str("");
+
+        bsp_sync();
+
+        unsigned int nmessages = 0;
+        size_t nbytes = 0;
+        bsp_qsize(&nmessages, &nbytes);
+
+        ss << "\nProcessor " << s << " received " << nmessages << " messages totalling " << nbytes << " bytes\n";
+
+        for (size_t n = 0; n < nmessages; ++n)
+        {
+            size_t i[2];
+            size_t status;
+            double distribution = 0;
+
+            bsp_get_tag(&status,&i);
+
+            size_t idx = i[0];
+            size_t dir = i[1];
+
+            if (status > 0)
+            {
+                bsp_move(&distribution, sizeof(double));
+                ss << "Idx: " << i[0] << "trying something: "  << " with status: " << status << " and payload: " << distribution << '\n';
+                d_domain->nodes[idx].distributions[dir].nextValue = distribution;
+
+            }
+        }
+        ss << '\n';
+        // std::cout << ss.str();
+        ss.clear();
+        ss.str("");
+
+        bsp_sync();
     }
 }

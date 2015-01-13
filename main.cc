@@ -11,10 +11,10 @@ extern "C" {
     #include "mcbsp.h"
 }
 
-const size_t ITERATIONS = 1;
+const size_t ITERATIONS = 1000;
 const size_t REPORT_PER_ITERATION = 5;
-const size_t dx = 6;
-const size_t dy = 6;
+const size_t dx = 20;
+const size_t dy = 20;
 
 size_t P;
 
@@ -72,33 +72,37 @@ void sim()
     // Initialize a velocity set and a domain
     auto set = new D2Q9;
     auto domainSize = {dx, dy};
+
     // LidDrivenCavityDomain initializer(set, domainSize);
     // PointDomain initializer(set, domainSize);
-    BoxedDomain initializer(set, domainSize, s, p);
-    // DomainInitializer initializer(set, domainSize, s, p);
+    // BoxedDomain initializer(set, domainSize, s, p);
+    DomainInitializer initializer(set, domainSize, s, p);
+
     // Create simulation
     LBM::Simulation sim(&initializer);
+
     for (size_t iter = 0; iter < ITERATIONS; ++iter)
     {
+        if (iter % 10 == 0)
+        {
+            double percentage = 100 * static_cast<double>(iter)/ITERATIONS;
+            std::cout << percentage << '%' << '\t';
+            sim.report();
+        }
         if (s == 0)
         {
-            if (iter % 10 == 0)
-            {
-                double percentage = 100 * static_cast<double>(iter)/ITERATIONS;
-                std::cout << percentage << '%' << '\t';
-                sim.report();
-            }
 
-            if (iter % REPORT_PER_ITERATION == 0)
-                createMatlabReport(sim, iter, domainSize);
+            // if (iter % REPORT_PER_ITERATION == 0)
+            //     createMatlabReport(sim, iter, domainSize);
         }
+        bsp_sync();
         sim.step();
     }
-
+    bsp_sync();
     if (s == 0)
         std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << '\n';
 
-    createMatlabReport(sim, ITERATIONS + 1, domainSize);
+    // createMatlabReport(sim, ITERATIONS + 1, domainSize);
     // TODO: make a unique pointer of the set
     delete set;
 }

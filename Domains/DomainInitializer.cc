@@ -21,11 +21,15 @@ namespace Domains {
 
     std::unique_ptr<Domain> DomainInitializer::domain()
     {
+        // setting the tagsize such that we can send the hash idx of a message
         size_t tag_size = sizeof(size_t);
         bsp_set_tagsize(&tag_size);
         bsp_sync();
 
         createNodes();
+        std::stringstream ss;
+
+        size_t s = bsp_pid();
         // Return the given domain
         std::unique_ptr<Domain> domain(new Domain);
         domain->nodes = std::move(d_nodes);
@@ -38,15 +42,15 @@ namespace Domains {
         domain->omega = omega();
 
         // setup messengers
-        std::cout << "Even kijken hoeveel messengers er zijn: " << d_messengers.size() << '\n';
 
         bsp_sync();
+
         // get the destination from bsp and apply it to the appropriate messenger
         unsigned int nmessages = 0;
         size_t nbytes = 0;
         bsp_qsize(&nmessages, &nbytes);
-        std::stringstream ss;
         ss << "Processor " << d_p << " received " << nmessages << " messages totalling " << nbytes << " bytes\n";
+        std::cout << ss.str(); ss.clear(); ss.str("");
         for (size_t n = 0; n < nmessages; ++n)
         {
             size_t i;
@@ -58,28 +62,28 @@ namespace Domains {
             if (status > 0)
             {
                 bsp_move(&localIdx, status);
-                ss << "Tag: " << i << " with index: " << d_map_to_messenger[i] << " and payload: " << localIdx;
 
-                d_messengers[d_map_to_messenger[i]].setLocalIdx(localIdx);
-                ss << " set local index of " << d_map_to_messenger[i] << " to " << localIdx << '\n';
-                ss << "Confirmation: " << d_messengers[d_map_to_messenger[i]].localIdx() << '\n';
+                d_messengers[d_map_to_messenger[i]].d_tag[0] = localIdx;
+                // ss << "Tag: " << i << " with index: " << d_map_to_messenger[i] << " and payload: " << localIdx;
+                // ss << " set local index of " << d_map_to_messenger[i] << " to " << localIdx << " confirmation: " << d_messengers[d_map_to_messenger[i]].d_tag[0] << '\n';
             }
         }
         std::cout << ss.str();
         ss.clear();
         ss.str("");
-        size_t s = bsp_pid();
-        for (auto messenger : d_messengers)
-        {
-            ss << "Message from: " << s << " to: " << messenger.processor() <<
-                " with direction: " << messenger.direction() <<
-                " to local idx: " << messenger.localIdx() << '\n';
-        }
-        std::cout << ss.str() << "\n\n\n\n\n\n";
+        ss << "Total nodes: " << domain->nodes.size() << '\n';
 
         // puur voor mooie debug messages
-        domain->messengers = d_messengers;
+        domain->messengers = std::move(d_messengers);
         bsp_sync();
+        ss.str(""); ss.clear();
+
+        for (size_t idx = 0; idx < domain->messengers.size(); ++idx)
+            ss << "Message from " << s << " to " << domain->messengers[idx].d_p <<
+                    " with (idx, dir) : (" << domain->messengers[idx].d_tag[0] << ", " << domain->messengers[idx].d_tag[1] <<
+                    ") and src: " << domain->messengers[idx].d_src << '\n';
+
+        std::cout << ss.str() << "\n\n";
 
         return domain;
     }
@@ -121,8 +125,15 @@ namespace Domains {
             }
         }
 
-        for (auto node : d_nodes)
-            connectNodeToNeighbours(node);
+        for (size_t idx = 0; idx < d_nodes.size(); ++idx)
+            connectNodeToNeighbours(idx);
+
+        // Connect the messengers to their nodes
+        for (size_t idx = 0; idx < d_messengers.size(); ++idx)
+        {
+            size_t node_idx = d_messengers[idx].d_tag[0];
+            d_nodes[node_idx].distributions[d_messengers[idx].d_tag[1]].neighbour = &d_messengers[idx].d_src;
+        }
     }
 
     Node DomainInitializer::initializeNodeAt(std::vector<int> position)
@@ -143,6 +154,8 @@ namespace Domains {
             distributions[dir].value     = d_set->weight(dir);
             distributions[dir].nextValue = d_set->weight(dir);
 
+            // distributions[dir].value     = 100 * node.position[0] + node.position[1] * 10 + dir;
+            // distributions[dir].nextValue = -1;
             // Commented distributions are here for easy testing purposes
             // distributions[dir].value     = d_nodes.size() * 10 + dir;
             // distributions[dir].nextValue = -1;
@@ -152,7 +165,7 @@ namespace Domains {
         return node;
     }
 
-    void DomainInitializer::connectNodeToNeighbours(Node &node)
+    void DomainInitializer::connectNodeToNeighbours(size_t idx)
     {
         size_t nDirections = d_set->nDirections;
 
@@ -163,17 +176,31 @@ namespace Domains {
             {
                 // get the neighbour in this direction, using periodic boundary
                 neighbour.push_back((
-                    node.position[dim] + d_set->direction(dir)[dim] + d_domain_size[dim]
+                    d_nodes[idx].position[dim] + d_set->direction(dir)[dim] + d_domain_size[dim]
                 ) % d_domain_size[dim]);
             }
 
-            node.distributions[dir].neighbour = destination(neighbour, dir);
-            sendLocationOfDistribution(node, dir);
+            sendLocationOfDistribution(d_nodes[idx], dir);
+
+            size_t p = processorOfNode(neighbour);
+            // if the node is in the current processor
+            if (p == d_p)
+            {
+                size_t neighbour_idx = idxOf(neighbour);
+                d_nodes[idx].distributions[dir].neighbour = &d_nodes[neighbour_idx].distributions[dir].nextValue;
+                continue;
+            }
+            // Create a new messenger and remember its location based on the
+            // position and dir of the current node
+            d_map_to_messenger[hashIdxOf(neighbour, dir)] = d_messengers.size();
+            d_messengers.push_back(create_messenger(p, dir));
+            // save the index of the node connected to this messenger such that we can connect them once we've created all messengers
+            d_messengers.back().d_tag[0] = idx;
         }
     }
 
     // Gets the
-    double *DomainInitializer::destination(std::vector<int> neighbour, size_t direction)
+    double *DomainInitializer::destination(std::vector<int> neighbour, size_t direction, size_t source_idx)
     {
         size_t p = processorOfNode(neighbour);
         // if the node is in the current processor
@@ -184,15 +211,11 @@ namespace Domains {
         }
         // Create a new messenger and remember its location based on the
         // position and direction of the current node
-        Messenger messenger(p, direction);
         d_map_to_messenger[hashIdxOf(neighbour, direction)] = d_messengers.size();
-        d_messengers.push_back(messenger);
-        std::stringstream ss;
-        size_t s = bsp_pid();
+        d_messengers.push_back(create_messenger(p, direction));
+        d_messengers.back().d_src = source_idx;
 
-        ss << "Creating hash: " << hashIdxOf(neighbour, direction) << " to " << d_messengers.size() - 1 << " from p: " << s << '\n';
-        std::cout << ss.str();
-        return messenger.source();
+        return &d_messengers.back().d_src;
     }
 
     // get the node pointing to this distribution and if it is not in
@@ -213,11 +236,6 @@ namespace Domains {
         if (p == d_p)
             return;
 
-        // send the destination of the distribution to the processor that streams
-        // to this distribution
-        // double *src = &node.distributions[dir].nextValue;
-
-
         // we send the local index of the node to the messenger
         std::vector<int> position;
         for (size_t dim = 0; dim < d_domain_size.size(); ++dim)
@@ -226,7 +244,7 @@ namespace Domains {
         // tag should contain the position and direction
         // the tag tells us where the messenger is located
         auto tag = hashIdxOf(position, dir);
-        size_t src = idxOf(position);
+        size_t src = idxOf(position);// the local index of this node
         bsp_send(p, &tag, &src, sizeof(double *));
     }
 

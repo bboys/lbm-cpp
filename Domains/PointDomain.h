@@ -13,7 +13,7 @@ namespace Domains {
 
         protected:
             Node initializeNodeAt(std::vector<int> position) override;
-            void connectNodeToNeighbours(Node &node) override;
+            void connectNodeToNeighbours(size_t idx) override;
             bool isInDomain(std::vector<int> position) override;
             bool isBounceBack(std::vector<int> position);
             double omega() override;

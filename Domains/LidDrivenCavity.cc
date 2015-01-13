@@ -15,28 +15,28 @@ namespace Domains {
     LidDrivenCavityDomain::~LidDrivenCavityDomain()
     {}
 
-    void LidDrivenCavityDomain::connectNodeToNeighbours(Node &node)
+    void LidDrivenCavityDomain::connectNodeToNeighbours(size_t idx)
     {
         size_t nDirections = d_set->nDirections;
 
         std::vector<int> position;
         for (size_t dim = 0; dim < d_domain_size.size(); ++dim)
-            position.push_back(node.position[dim]);
+            position.push_back(d_nodes[idx].position[dim]);
 
         for (size_t dir = 0; dir < nDirections; ++dir)
         {
             std::vector<int> neighbour;
             for (size_t dim = 0; dim < d_domain_size.size(); ++dim)
                 neighbour.push_back(
-                    node.position[dim] + d_set->direction(dir)[dim]
+                    d_nodes[idx].position[dim] + d_set->direction(dir)[dim]
                 );
 
             if (isZouHe(position) && pointsOutwards(neighbour))
-                node.distributions[dir].neighbour = nullptr;
+                d_nodes[idx].distributions[dir].neighbour = nullptr;
             else if (isBounceBack(neighbour))
             {
                 size_t op_dir = d_set->oppositeDirectionOf(dir);
-                node.distributions[dir].neighbour = &node.distributions[op_dir].nextValue;
+                d_nodes[idx].distributions[dir].neighbour = &d_nodes[idx].distributions[op_dir].nextValue;
             }
             else
             {
@@ -45,7 +45,7 @@ namespace Domains {
                     neighbour[dim] = (neighbour[dim] + d_domain_size[dim]) % d_domain_size[dim];
 
                 size_t neighbour_idx = idxOf(neighbour);
-                node.distributions[dir].neighbour = &d_nodes[neighbour_idx].distributions[dir].nextValue;
+                d_nodes[idx].distributions[dir].neighbour = &d_nodes[neighbour_idx].distributions[dir].nextValue;
             }
         }
     }

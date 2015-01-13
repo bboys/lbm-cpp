@@ -39,7 +39,7 @@ namespace Domains {
         return node;
     }
 
-    void PointDomain::connectNodeToNeighbours(Node &node)
+    void PointDomain::connectNodeToNeighbours(size_t idx)
     {
         size_t nDirections = d_set->nDirections;
 
@@ -48,18 +48,18 @@ namespace Domains {
             std::vector<int> neighbour;
             for (size_t dim = 0; dim < d_domain_size.size(); ++dim)
                 neighbour.push_back(
-                    node.position[dim] + d_set->direction(dir)[dim]
+                    d_nodes[idx].position[dim] + d_set->direction(dir)[dim]
                 );
 
             if (isBounceBack(neighbour))
             {
                 size_t op_dir =d_set->oppositeDirectionOf(dir);
-                node.distributions[dir].neighbour = &node.distributions[op_dir].nextValue;
+                d_nodes[idx].distributions[dir].neighbour = &d_nodes[idx].distributions[op_dir].nextValue;
             }
             else
             {
                 size_t neighbour_idx = idxOf(neighbour);
-                node.distributions[dir].neighbour = &d_nodes[neighbour_idx].distributions[dir].nextValue;
+                d_nodes[idx].distributions[dir].neighbour = &d_nodes[neighbour_idx].distributions[dir].nextValue;
             }
         }
     }
