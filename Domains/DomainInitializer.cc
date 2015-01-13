@@ -29,12 +29,10 @@ namespace Domains {
         bsp_sync();
 
         createNodes();
-        std::stringstream ss;
 
-        size_t s = bsp_pid();
-        // Return the given domain
         std::unique_ptr<Domain> domain(new Domain);
         domain->nodes = std::move(d_nodes);
+
         // Now that we've moved the nodes to our domain object, we can create post
         // processors which can point to these nodes
         createPostProcessors(domain->nodes);
@@ -43,51 +41,29 @@ namespace Domains {
         domain->set    = d_set;
         domain->omega = omega();
 
-        // setup messengers
-
+        // setup messengers (for the parallelisation of the code)
         bsp_sync();
-
         // get the destination from bsp and apply it to the appropriate messenger
         unsigned int nmessages = 0;
         size_t nbytes = 0;
         bsp_qsize(&nmessages, &nbytes);
-        ss << "Processor " << d_p << " received " << nmessages << " messages totalling " << nbytes << " bytes\n";
-        std::cout << ss.str(); ss.clear(); ss.str("");
         for (size_t n = 0; n < nmessages; ++n)
         {
-            size_t i;
+            size_t idx; // the hashIdx of the current messenger
             size_t status;
-            size_t localIdx = 0;
-
-            bsp_get_tag(&status,&i);
+            bsp_get_tag(&status,&idx);
 
             if (status > 0)
             {
+                size_t localIdx = 0;
                 bsp_move(&localIdx, status);
-
-                d_messengers[d_map_to_messenger[i]].d_tag[0] = localIdx;
-                // ss << "Tag: " << i << " with index: " << d_map_to_messenger[i] << " and payload: " << localIdx;
-                // ss << " set local index of " << d_map_to_messenger[i] << " to " << localIdx << " confirmation: " << d_messengers[d_map_to_messenger[i]].d_tag[0] << '\n';
+                d_messengers[d_map_to_messenger[idx]].d_tag[0] = localIdx;
             }
+            else
+                throw "Couldn't move the local idx during initialization phase.";
         }
-        std::cout << ss.str();
-        ss.clear();
-        ss.str("");
-        // ss << "Total nodes: " << domain->nodes.size() << '\n';
 
-        // puur voor mooie debug messages
         domain->messengers = std::move(d_messengers);
-        bsp_sync();
-        ss.str(""); ss.clear();
-
-        // for (size_t idx = 0; idx < domain->messengers.size(); ++idx)
-        //     ss << "Message from " << s << " to " << domain->messengers[idx].d_p <<
-        //             " with (idx, dir) : (" << domain->messengers[idx].d_tag[0] << ", " << domain->messengers[idx].d_tag[1] <<
-        //             ") and src: " << domain->messengers[idx].d_src << '\n';
-
-
-        ss << "Processor " << s << " contains: " << domain->nodes.size() << " nodes\n";
-        std::cout << ss.str();
 
         return domain;
     }
@@ -157,12 +133,6 @@ namespace Domains {
         {
             distributions[dir].value     = d_set->weight(dir);
             distributions[dir].nextValue = d_set->weight(dir);
-
-            // distributions[dir].value     = 100 * node.position[0] + node.position[1] * 10 + dir;
-            // distributions[dir].nextValue = -1;
-            // Commented distributions are here for easy testing purposes
-            // distributions[dir].value     = d_nodes.size() * 10 + dir;
-            // distributions[dir].nextValue = -1;
         }
         node.distributions = distributions;
 
@@ -192,34 +162,17 @@ namespace Domains {
             {
                 size_t neighbour_idx = idxOf(neighbour);
                 d_nodes[idx].distributions[dir].neighbour = &d_nodes[neighbour_idx].distributions[dir].nextValue;
-                continue;
             }
-            // Create a new messenger and remember its location based on the
-            // position and dir of the current node
-            d_map_to_messenger[hashIdxOf(neighbour, dir)] = d_messengers.size();
-            d_messengers.push_back(create_messenger(p, dir));
-            // save the index of the node connected to this messenger such that we can connect them once we've created all messengers
-            d_messengers.back().d_tag[0] = idx;
+            else
+            {
+                // Create a new messenger and remember its location based on the
+                // position and dir of the current node
+                d_map_to_messenger[hashIdxOf(neighbour, dir)] = d_messengers.size();
+                d_messengers.push_back(create_messenger(p, dir));
+                // save the index of the node connected to this messenger such that we can connect them once we've created all messengers
+                d_messengers.back().d_tag[0] = idx;
+            }
         }
-    }
-
-    // Gets the
-    double *DomainInitializer::destination(std::vector<int> neighbour, size_t direction, size_t source_idx)
-    {
-        size_t p = processorOfNode(neighbour);
-        // if the node is in the current processor
-        if (p == d_p)
-        {
-            size_t neighbour_idx = idxOf(neighbour);
-            return &d_nodes[neighbour_idx].distributions[direction].nextValue;
-        }
-        // Create a new messenger and remember its location based on the
-        // position and direction of the current node
-        d_map_to_messenger[hashIdxOf(neighbour, direction)] = d_messengers.size();
-        d_messengers.push_back(create_messenger(p, direction));
-        d_messengers.back().d_src = source_idx;
-
-        return &d_messengers.back().d_src;
     }
 
     // get the node pointing to this distribution and if it is not in
@@ -256,18 +209,14 @@ namespace Domains {
     {
         // splitting vertically
         double p = static_cast<double>(d_total_processors * position[0]) / d_domain_size[0];
-        // if (bsp_pid() == static_cast<size_t>(floor(p)))
-        //     std::cout << "T * p: " << d_total_processors * position[0] << " domain: " << d_domain_size[0] << '\t';
-
         return static_cast<size_t>(floor(p));
     }
 
     void DomainInitializer::createPostProcessors(std::vector<Node> &nodes)
     {
-
+        // We don't need any post processors for this "dummy" domain
     }
 
-    //
     bool DomainInitializer::isInDomain(std::vector<int> position)
     {
         return true;

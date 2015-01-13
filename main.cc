@@ -1,10 +1,7 @@
-// inspiration:
-// https://github.com/anders-dc/lbm-d3q19/blob/master/lbm.c
-
 #include "main.h"
 #include <ctime>
 #include <fstream>
-#include <sstream>      // std::stringstream
+#include <sstream>
 using namespace Domains;
 
 extern "C" {
@@ -13,8 +10,8 @@ extern "C" {
 
 const size_t ITERATIONS = 1000;
 const size_t REPORT_PER_ITERATION = 5;
-const size_t dx = 80;
-const size_t dy = 40;
+const size_t dx = 40;
+const size_t dy = 20;
 
 size_t P;
 

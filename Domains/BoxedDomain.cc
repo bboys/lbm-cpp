@@ -30,8 +30,8 @@ namespace Domains {
                 size_t op_dir =d_set->oppositeDirectionOf(dir);
                 d_nodes[idx].distributions[dir].neighbour = &d_nodes[idx].distributions[op_dir].nextValue;
             }
-            else
-                d_nodes[idx].distributions[dir].neighbour = destination(neighbour, dir, idx);
+            // else (todo)
+            //     d_nodes[idx].distributions[dir].neighbour = destination(neighbour, dir, idx);
             sendLocationOfDistribution(d_nodes[idx], dir);
         }
     }
@@ -51,11 +51,6 @@ namespace Domains {
         size_t p = processorOfNode(neighbour);
         if (p == d_p || isBounceBack(neighbour))
             return;
-
-        // send the destination of the distribution to the processor that streams
-        // to this distribution
-        // double *src = &node.distributions[dir].nextValue;
-
 
         // we send the local index of the node to the messenger
         std::vector<int> position;

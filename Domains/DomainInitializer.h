@@ -56,8 +56,6 @@ namespace Domains {
             // get the destrination of a distribution after streaming step
             // can be a pointer to a node's distribution, or a pointer to a messenger
             virtual void sendLocationOfDistribution(Node &node, size_t direction);
-            // virtual double *destination(std::vector<int> position, size_t direction);
-            virtual double *destination(std::vector<int> position, size_t direction, size_t source_idx);
             virtual size_t processorOfNode(std::vector<int> position);
 
     };
