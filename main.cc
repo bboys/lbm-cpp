@@ -13,8 +13,8 @@ extern "C" {
 
 const size_t ITERATIONS = 1000;
 const size_t REPORT_PER_ITERATION = 5;
-const size_t dx = 20;
-const size_t dy = 20;
+const size_t dx = 40;
+const size_t dy = 40;
 
 size_t P;
 
@@ -80,14 +80,14 @@ void sim()
 
     // Create simulation
     LBM::Simulation sim(&initializer);
-
+    sim.report();
     for (size_t iter = 0; iter < ITERATIONS; ++iter)
     {
-        if (iter % 10 == 0)
+        if (iter % 100 == 0)
         {
             if (s == 0)
-                std::cout << 100 * static_cast<double>(iter)/ITERATIONS << '%' << '\t';
-            sim.report();
+                std::cout << 100 * static_cast<double>(iter)/ITERATIONS << '%' << '\n';
+            // sim.report();
         }
         if (s == 0)
         {
@@ -95,9 +95,10 @@ void sim()
             // if (iter % REPORT_PER_ITERATION == 0)
             //     createMatlabReport(sim, iter, domainSize);
         }
-        bsp_sync();
+        // bsp_sync();
         sim.step();
     }
+    sim.report();
     bsp_sync();
     if (s == 0)
         std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << '\n';

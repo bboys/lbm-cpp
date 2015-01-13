@@ -1,6 +1,8 @@
 #include "DomainInitializer.h"
 #include <iostream>
 #include <sstream>
+#include <math.h>       /* ceil */
+
 
 extern "C" {
     #include "mcbsp.h"
@@ -71,19 +73,21 @@ namespace Domains {
         std::cout << ss.str();
         ss.clear();
         ss.str("");
-        ss << "Total nodes: " << domain->nodes.size() << '\n';
+        // ss << "Total nodes: " << domain->nodes.size() << '\n';
 
         // puur voor mooie debug messages
         domain->messengers = std::move(d_messengers);
         bsp_sync();
         ss.str(""); ss.clear();
 
-        for (size_t idx = 0; idx < domain->messengers.size(); ++idx)
-            ss << "Message from " << s << " to " << domain->messengers[idx].d_p <<
-                    " with (idx, dir) : (" << domain->messengers[idx].d_tag[0] << ", " << domain->messengers[idx].d_tag[1] <<
-                    ") and src: " << domain->messengers[idx].d_src << '\n';
+        // for (size_t idx = 0; idx < domain->messengers.size(); ++idx)
+        //     ss << "Message from " << s << " to " << domain->messengers[idx].d_p <<
+        //             " with (idx, dir) : (" << domain->messengers[idx].d_tag[0] << ", " << domain->messengers[idx].d_tag[1] <<
+        //             ") and src: " << domain->messengers[idx].d_src << '\n';
 
-        std::cout << ss.str() << "\n\n";
+
+        ss << "Processor " << s << " contains: " << domain->nodes.size() << " nodes\n";
+        std::cout << ss.str();
 
         return domain;
     }
@@ -250,16 +254,12 @@ namespace Domains {
 
     size_t DomainInitializer::processorOfNode(std::vector<int> position)
     {
-        // TODO!
-        if (d_total_processors < 2)
-            return 0;
-        // here we might want to use a distribution creator object or something alike
-        if (position[0] < d_domain_size[0] / 2)
-            return 0;
-        else
-            return 1;
-        // here we might want to use a distribution creator object or something alike
-        return 0;
+        // splitting vertically
+        double p = static_cast<double>(d_total_processors * position[0]) / d_domain_size[0];
+        // if (bsp_pid() == static_cast<size_t>(floor(p)))
+        //     std::cout << "T * p: " << d_total_processors * position[0] << " domain: " << d_domain_size[0] << '\t';
+
+        return static_cast<size_t>(floor(p));
     }
 
     void DomainInitializer::createPostProcessors(std::vector<Node> &nodes)
