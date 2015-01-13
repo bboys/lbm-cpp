@@ -13,7 +13,7 @@ extern "C" {
 
 const size_t ITERATIONS = 1000;
 const size_t REPORT_PER_ITERATION = 5;
-const size_t dx = 40;
+const size_t dx = 80;
 const size_t dy = 40;
 
 size_t P;
@@ -76,11 +76,23 @@ void sim()
     // LidDrivenCavityDomain initializer(set, domainSize);
     // PointDomain initializer(set, domainSize);
     // BoxedDomain initializer(set, domainSize, s, p);
-    DomainInitializer initializer(set, domainSize, s, p);
 
+    double initialization_time = bsp_time();
+
+    DomainInitializer initializer(set, domainSize, s, p);
     // Create simulation
     LBM::Simulation sim(&initializer);
+
+    bsp_sync();
+    double current_time = bsp_time();
+
+    if (s==0)
+        std::cout << "Time: " << (current_time - initialization_time) << " seconds" << '\n';
+
     sim.report();
+
+    bsp_sync();
+    double process_time = bsp_time();
     for (size_t iter = 0; iter < ITERATIONS; ++iter)
     {
         if (iter % 100 == 0)
@@ -98,10 +110,16 @@ void sim()
         // bsp_sync();
         sim.step();
     }
+    bsp_sync();
+    current_time = bsp_time();
+
+    if (s==0)
+        std::cout << "Time: " << (current_time - process_time) << " seconds" << '\n';
+
     sim.report();
     bsp_sync();
     if (s == 0)
-        std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC / 1000) << " ms" << '\n';
+        std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC) << " s" << '\n';
 
     // createMatlabReport(sim, ITERATIONS + 1, domainSize);
     // TODO: make a unique pointer of the set
