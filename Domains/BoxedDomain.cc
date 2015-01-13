@@ -1,8 +1,7 @@
 #include "BoxedDomain.h"
 
-extern "C" {
-    #include "mcbsp.h"
-}
+#include "../LBM/parallel.h"
+
 
 namespace Domains {
     BoxedDomain::BoxedDomain(VelocitySet *set, std::vector<size_t> domainSize, size_t p, size_t totalProcessors)

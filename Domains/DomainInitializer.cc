@@ -4,9 +4,7 @@
 #include <math.h>       /* ceil */
 
 
-extern "C" {
-    #include "mcbsp.h"
-}
+#include "../LBM/parallel.h"
 
 namespace Domains {
 

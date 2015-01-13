@@ -4,9 +4,7 @@
 #include <sstream>
 using namespace Domains;
 
-extern "C" {
-    #include "mcbsp.h"
-}
+#include "LBM/parallel.h"
 
 // Global variables
 size_t dx;
@@ -30,7 +28,8 @@ size_t askForIterations(int argc, char** argv)
 size_t askForProcessors(int argc, char** argv)
 {
     size_t P;
-    if (argc > 1) {
+    if (argc > 1)
+    {
         std::istringstream iss(argv[1]);
         if ((iss >> P) )
             return P;

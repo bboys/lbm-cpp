@@ -4,9 +4,7 @@
 #include <iostream>
 #include <sstream>
 
-extern "C" {
-    #include "mcbsp.h"
-}
+#include "../LBM/parallel.h"
 
 namespace LBM {
     Simulation::Simulation(Domains::DomainInitializer *initializer)
