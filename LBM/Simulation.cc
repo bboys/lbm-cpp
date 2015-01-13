@@ -100,18 +100,31 @@ namespace LBM {
 
     void Simulation::report()
     {
-        // for (size_t p = 0; p < bsp_nprocs(); ++p)
-        // {
-        //     if (bsp_pid() == p)
-        //     {
-        //         std::cout << "Distributions from processor " << p << '\n';
-        //         for (auto node : d_domain->nodes)
-        //             ::Reporting::reportOnDistributions(d_domain->set, node);
-        //     }
-        //     bsp_sync();
-        // }
+        size_t total_p = bsp_nprocs();
+        size_t s = bsp_pid();
+        double *densities = new double[total_p]();
+        double current_density = 0;
+        bsp_push_reg(densities,total_p * sizeof(double));
+        bsp_sync();
 
-        ::Reporting::report(d_domain->set, &d_domain->nodes[0], d_domain->nodes.size());
+        for (auto node : d_domain->nodes)
+            current_density += density(d_domain->set, node);
+
+        // std::cout << "Denstiy from processor " << s << ": " << current_density << '\n';
+        // send density to each processor
+        for (size_t t = 0; t < total_p; t++)
+            bsp_put(t, &current_density, densities, s * sizeof(double), sizeof(double));
+
+        bsp_sync();
+        // now calculate the total density
+        double total_density = 0;
+        for (size_t t = 0; t < total_p; t++)
+            total_density += densities[t];
+
+        bsp_pop_reg(densities);
+
+        if (s == 0)
+            std::cout << "Total density: " << total_density << '\n';
     }
 
     void Simulation::report(::Reporting::MatlabReporter reporter)

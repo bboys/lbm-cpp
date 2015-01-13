@@ -85,8 +85,8 @@ void sim()
     {
         if (iter % 10 == 0)
         {
-            double percentage = 100 * static_cast<double>(iter)/ITERATIONS;
-            std::cout << percentage << '%' << '\t';
+            if (s == 0)
+                std::cout << 100 * static_cast<double>(iter)/ITERATIONS << '%' << '\t';
             sim.report();
         }
         if (s == 0)
