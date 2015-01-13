@@ -11,10 +11,10 @@ extern "C" {
     #include "mcbsp.h"
 }
 
-const size_t ITERATIONS = 10;
+const size_t ITERATIONS = 1;
 const size_t REPORT_PER_ITERATION = 5;
-const size_t dx = 10;
-const size_t dy = 10;
+const size_t dx = 6;
+const size_t dy = 6;
 
 size_t P;
 
@@ -92,7 +92,6 @@ void sim()
             if (iter % REPORT_PER_ITERATION == 0)
                 createMatlabReport(sim, iter, domainSize);
         }
-
         sim.step();
     }
 

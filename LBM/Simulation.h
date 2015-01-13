@@ -4,7 +4,7 @@
 #include "../Domains/DomainInitializer.h"
 #include "../VelocitySets/VelocitySet.h"
 #include "node.h"
-
+#include "../LBM/Messenger.h"
 
 #include "../Reporting/reporting.h"
 #include "../Reporting/MatlabReporter.h"
@@ -25,6 +25,7 @@ namespace LBM {
             void stream(VelocitySet *set, std::vector<Node> &nodes);
             void postStreamProcess();
             void collission(VelocitySet *set, std::vector<Node> &nodes);
+            void communicate(std::vector<Messenger> messengers);
 
     };
 }

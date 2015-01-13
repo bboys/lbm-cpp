@@ -51,20 +51,34 @@ namespace Domains {
         {
             size_t i;
             size_t status;
-            size_t dest = 0;
+            size_t localIdx = 0;
 
             bsp_get_tag(&status,&i);
+
             if (status > 0)
             {
-                bsp_move(&dest, status);
-                ss << "Tag with status: " << status << " length of dest: " << sizeof(dest) << " and tag: " << i << " and payload: " << dest << '\n';
+                bsp_move(&localIdx, status);
+                ss << "Tag: " << i << " with index: " << d_map_to_messenger[i] << " and payload: " << localIdx;
+
+                d_messengers[d_map_to_messenger[i]].setLocalIdx(localIdx);
+                ss << " set local index of " << d_map_to_messenger[i] << " to " << localIdx << '\n';
+                ss << "Confirmation: " << d_messengers[d_map_to_messenger[i]].localIdx() << '\n';
             }
         }
         std::cout << ss.str();
         ss.clear();
         ss.str("");
+        size_t s = bsp_pid();
+        for (auto messenger : d_messengers)
+        {
+            ss << "Message from: " << s << " to: " << messenger.processor() <<
+                " with direction: " << messenger.direction() <<
+                " to local idx: " << messenger.localIdx() << '\n';
+        }
+        std::cout << ss.str() << "\n\n\n\n\n\n";
 
         // puur voor mooie debug messages
+        domain->messengers = d_messengers;
         bsp_sync();
 
         return domain;
@@ -158,6 +172,29 @@ namespace Domains {
         }
     }
 
+    // Gets the
+    double *DomainInitializer::destination(std::vector<int> neighbour, size_t direction)
+    {
+        size_t p = processorOfNode(neighbour);
+        // if the node is in the current processor
+        if (p == d_p)
+        {
+            size_t neighbour_idx = idxOf(neighbour);
+            return &d_nodes[neighbour_idx].distributions[direction].nextValue;
+        }
+        // Create a new messenger and remember its location based on the
+        // position and direction of the current node
+        Messenger messenger(p, direction);
+        d_map_to_messenger[hashIdxOf(neighbour, direction)] = d_messengers.size();
+        d_messengers.push_back(messenger);
+        std::stringstream ss;
+        size_t s = bsp_pid();
+
+        ss << "Creating hash: " << hashIdxOf(neighbour, direction) << " to " << d_messengers.size() - 1 << " from p: " << s << '\n';
+        std::cout << ss.str();
+        return messenger.source();
+    }
+
     // get the node pointing to this distribution and if it is not in
     // the current processor, then send the source of this distribution
     // to that processor
@@ -180,40 +217,29 @@ namespace Domains {
         // to this distribution
         // double *src = &node.distributions[dir].nextValue;
 
-        // tag should contain the position and direction
-        // the tag tells us where the messenger is located
-        auto tag = hashIdxOf(neighbour, dir);
 
         // we send the local index of the node to the messenger
         std::vector<int> position;
         for (size_t dim = 0; dim < d_domain_size.size(); ++dim)
             position.push_back(node.position[dim]);
 
+        // tag should contain the position and direction
+        // the tag tells us where the messenger is located
+        auto tag = hashIdxOf(position, dir);
         size_t src = idxOf(position);
         bsp_send(p, &tag, &src, sizeof(double *));
     }
 
-    // Gets the
-    double *DomainInitializer::destination(std::vector<int> neighbour, size_t direction)
-    {
-        size_t p = processorOfNode(neighbour);
-        // if the node is in the current processor
-        if (p == d_p)
-        {
-            size_t neighbour_idx = idxOf(neighbour);
-            return &d_nodes[neighbour_idx].distributions[direction].nextValue;
-        }
-        // Create a new messenger and remember its location based on the
-        // position and direction of the current node
-        Messenger messenger(p, direction);
-        d_map_to_messenger[hashIdxOf(neighbour, direction)] = d_messengers.size();
-        d_messengers.push_back(messenger);
-
-        return messenger.source();
-    }
-
     size_t DomainInitializer::processorOfNode(std::vector<int> position)
     {
+        // TODO!
+        if (d_total_processors < 2)
+            return 0;
+        // here we might want to use a distribution creator object or something alike
+        if (position[0] < d_domain_size[0] / 2)
+            return 0;
+        else
+            return 1;
         // here we might want to use a distribution creator object or something alike
         return 0;
     }

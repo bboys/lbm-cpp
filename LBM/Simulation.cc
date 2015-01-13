@@ -1,7 +1,13 @@
 #include "Simulation.h"
-
 #include "node.h"
 #include <iostream>
+#include <iostream>
+#include <sstream>
+
+extern "C" {
+    #include "mcbsp.h"
+}
+
 namespace LBM {
     Simulation::Simulation(Domains::DomainInitializer *initializer)
     :
@@ -20,7 +26,7 @@ namespace LBM {
     void Simulation::step()
     {
         stream(d_domain->set, d_domain->nodes);
-        // communicate()
+        communicate(d_domain->messengers);
         postStreamProcess();
         collission(d_domain->set, d_domain->nodes);
     }
@@ -75,5 +81,18 @@ namespace LBM {
     void Simulation::report(::Reporting::MatlabReporter reporter)
     {
         reporter.reportOnTimeStep(d_domain->set, d_domain->nodes);
+    }
+
+    void Simulation::communicate(std::vector<Messenger> messengers)
+    {
+        std::stringstream ss;
+        size_t s = bsp_pid();
+        for (auto messenger : messengers)
+        {
+            ss << "Message from: " << s << " to: " << messenger.processor() <<
+                " with direction: " << messenger.direction() <<
+                " to local idx: " << messenger.localIdx() << '\n';
+        }
+        std::cout << ss.str();
     }
 }

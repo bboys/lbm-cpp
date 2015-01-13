@@ -56,21 +56,24 @@ namespace Domains {
         // to this distribution
         // double *src = &node.distributions[dir].nextValue;
 
-        // tag should contain the position and direction
-        // the tag tells us where the messenger is located
-        auto tag = hashIdxOf(neighbour, dir);
 
         // we send the local index of the node to the messenger
         std::vector<int> position;
         for (size_t dim = 0; dim < d_domain_size.size(); ++dim)
             position.push_back(node.position[dim]);
 
+        // tag should contain the position and direction
+        // the tag tells us where the messenger is located
+        auto tag = hashIdxOf(position, dir);
         size_t src = idxOf(position);
         bsp_send(p, &tag, &src, sizeof(double *));
     }
 
     size_t BoxedDomain::processorOfNode(std::vector<int> position)
     {
+        // TODO!
+        if (d_total_processors < 2)
+            return 0;
         // here we might want to use a distribution creator object or something alike
         if (position[0] < d_domain_size[0] / 2)
             return 0;
