@@ -13,7 +13,10 @@ namespace LBM {
     :
         d_domain(initializer->domain())
     {
-
+        // we'll send both the local idx and the direction which we we'll change
+        size_t tag_size = sizeof(size_t[2]);
+        bsp_set_tagsize(&tag_size);
+        bsp_sync();
     }
 
     Simulation::~Simulation()
@@ -27,33 +30,10 @@ namespace LBM {
 
     void Simulation::step()
     {
-        // if (bsp_pid() == 0)
-        //     std::cout << "\n\nBefore streaming\n";
-
-        // bsp_sync();
-        // report();
-
         stream(d_domain->set, d_domain->nodes);
-        // if (bsp_pid() == 0)
-        //     std::cout << "\n\nAfter streaming\n";
-
-        // // bsp_sync();
-        // // report();
-        // // bsp_sync();
-        // std::cout << "\n\n";
         communicate(d_domain->messengers);
-        // if (bsp_pid() == 0)
-        //     std::cout << "\n\nAfter communicating\n";
-
-        // bsp_sync();
-        // report();
         postStreamProcess();
         collission(d_domain->set, d_domain->nodes);
-        // if (bsp_pid() == 0)
-        //     std::cout << "\n\nAfter collission\n\n\n";
-
-        // bsp_sync();
-        // report();
     }
 
     void Simulation::stream(VelocitySet *set, std::vector<Node> &nodes)
@@ -98,6 +78,35 @@ namespace LBM {
             d_domain->post_processors[idx]->process();
     }
 
+
+    void Simulation::report(::Reporting::MatlabReporter reporter)
+    {
+        // reporter.reportOnTimeStep(d_domain->set, d_domain->nodes);
+    }
+
+    void Simulation::communicate(std::vector<Messenger> messengers)
+    {
+        for (auto messenger : messengers)
+            bsp_send(messenger.d_p, messenger.d_tag, &messenger.d_src, sizeof(double));
+        bsp_sync();
+
+        unsigned int nmessages = 0;
+        size_t nbytes = 0;
+        bsp_qsize(&nmessages, &nbytes);
+        for (size_t n = 0; n < nmessages; ++n)
+        {
+            size_t i[2], status;
+            bsp_get_tag(&status,&i); // i[0] = idx, i[1] = dir
+            if (status > 0)
+            {
+                double distribution = 0;
+                bsp_move(&distribution, sizeof(double));
+                d_domain->nodes[i[0]].distributions[i[1]].nextValue = distribution;
+            }
+        }
+        // bsp_sync();
+    }
+
     void Simulation::report()
     {
         size_t total_p = bsp_nprocs();
@@ -110,7 +119,6 @@ namespace LBM {
         for (auto node : d_domain->nodes)
             current_density += density(d_domain->set, node);
 
-        // std::cout << "Denstiy from processor " << s << ": " << current_density << '\n';
         // send density to each processor
         for (size_t t = 0; t < total_p; t++)
             bsp_put(t, &current_density, densities, s * sizeof(double), sizeof(double));
@@ -125,71 +133,8 @@ namespace LBM {
 
         if (s == 0)
             std::cout << "Total density: " << total_density << '\n';
+
+        delete[] densities;
     }
 
-    void Simulation::report(::Reporting::MatlabReporter reporter)
-    {
-        // reporter.reportOnTimeStep(d_domain->set, d_domain->nodes);
-    }
-
-    void Simulation::communicate(std::vector<Messenger> messengers)
-    {
-        // we'll send both the local idx and the direction which we we'll change
-        size_t tag_size = sizeof(size_t[2]);
-        bsp_set_tagsize(&tag_size);
-        bsp_sync();
-
-        std::stringstream ss;
-        size_t s = bsp_pid();
-        for (auto messenger : messengers)
-        {
-            ss << "Message from: " << s << " to: " << messenger.d_p <<
-                " with direction: " << messenger.d_tag[1] <<
-                " to local idx: " << messenger.d_tag[0] <<
-                " and source: " << messenger.d_src;
-            auto tag = messenger.d_tag;
-
-            ss << " with tag: " << tag[0] << ", " << tag[1] << '\n';
-            ss << "The tags have size: " << sizeof(tag[0]) << " and " << sizeof(tag[1]) << '\n';
-            bsp_send(messenger.d_p, messenger.d_tag, &messenger.d_src, sizeof(double));
-        }
-        // std::cout << ss.str();
-
-        // ss.clear();
-        // ss.str("");
-
-        bsp_sync();
-
-        unsigned int nmessages = 0;
-        size_t nbytes = 0;
-        bsp_qsize(&nmessages, &nbytes);
-
-        ss << "\nProcessor " << s << " received " << nmessages << " messages totalling " << nbytes << " bytes\n";
-
-        for (size_t n = 0; n < nmessages; ++n)
-        {
-            size_t i[2];
-            size_t status;
-            double distribution = 0;
-
-            bsp_get_tag(&status,&i);
-
-            size_t idx = i[0];
-            size_t dir = i[1];
-
-            if (status > 0)
-            {
-                bsp_move(&distribution, sizeof(double));
-                ss << "Idx: " << i[0] << "trying something: "  << " with status: " << status << " and payload: " << distribution << '\n';
-                d_domain->nodes[idx].distributions[dir].nextValue = distribution;
-
-            }
-        }
-        ss << '\n';
-        // std::cout << ss.str();
-        ss.clear();
-        ss.str("");
-
-        bsp_sync();
-    }
 }

@@ -8,11 +8,11 @@ extern "C" {
     #include "mcbsp.h"
 }
 
-const size_t ITERATIONS = 1000;
-const size_t REPORT_PER_ITERATION = 5;
-const size_t dx = 40;
-const size_t dy = 20;
-
+// Global variables
+size_t dx;
+size_t dy;
+size_t ITERATIONS;
+size_t REPORT_PER_ITERATION;
 size_t P;
 
 size_t askForProcessors(int argc, char** argv)
@@ -75,7 +75,6 @@ void sim()
     // BoxedDomain initializer(set, domainSize, s, p);
 
     double initialization_time = bsp_time();
-
     DomainInitializer initializer(set, domainSize, s, p);
     // Create simulation
     LBM::Simulation sim(&initializer);
@@ -84,36 +83,22 @@ void sim()
     double current_time = bsp_time();
 
     if (s==0)
-        std::cout << "Time: " << (current_time - initialization_time) << " seconds" << '\n';
-
-    sim.report();
+        std::cout << "Initialization time: " << (current_time - initialization_time) << " seconds" << '\n';
 
     bsp_sync();
     double process_time = bsp_time();
     for (size_t iter = 0; iter < ITERATIONS; ++iter)
     {
-        if (iter % 100 == 0)
-        {
-            if (s == 0)
-                std::cout << 100 * static_cast<double>(iter)/ITERATIONS << '%' << '\n';
-            // sim.report();
-        }
-        if (s == 0)
-        {
-
-            // if (iter % REPORT_PER_ITERATION == 0)
-            //     createMatlabReport(sim, iter, domainSize);
-        }
-        // bsp_sync();
+        if (iter % REPORT_PER_ITERATION == 0 && s == 0)
+            std::cout << 100 * static_cast<double>(iter)/ITERATIONS << '%' << '\n';
         sim.step();
     }
     bsp_sync();
     current_time = bsp_time();
 
     if (s==0)
-        std::cout << "Time: " << (current_time - process_time) << " seconds" << '\n';
+        std::cout << "Computation time: " << (current_time - process_time) << " seconds" << '\n';
 
-    sim.report();
     bsp_sync();
     if (s == 0)
         std::cout << "Time: " << (std::clock() - start) / (double)(CLOCKS_PER_SEC) << " s" << '\n';
@@ -125,6 +110,11 @@ void sim()
 
 int main(int argc, char **argv)
 {
+    ITERATIONS = 100;
+    REPORT_PER_ITERATION = 10;
+    dx = 10;
+    dy = 10;
+
     bsp_init(sim, argc, argv);
 
     P = askForProcessors(argc, argv);
