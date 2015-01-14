@@ -105,18 +105,18 @@ void simulate()
     bsp_sync();
     double initialization_time = bsp_time();
     // Initialize a velocity set and a domain
-    auto set = new D2Q9;
+    D2Q9 set;
     auto domainSize = {dx, dy};
 
     // All domains except DomainInitializer are currently not working!
-        // LidDrivenCavityDomain initializer(set, domainSize);
-        // PointDomain initializer(set, domainSize);
-        // BoxedDomain initializer(set, domainSize, s, p);
-    DomainInitializer initializer(set, domainSize, s, p);
+        // LidDrivenCavityDomain initializer(&set, domainSize);
+        // PointDomain initializer(&set, domainSize);
+        // BoxedDomain initializer(&set, domainSize, s, p);
+    DomainInitializer initializer(&set, domainSize, s, p);
 
     // Create simulation
     LBM::Simulation sim(&initializer);
-    return;
+
     // Log initialization time and prepare computation time
     bsp_sync();
     double current_time = bsp_time();
@@ -142,15 +142,13 @@ void simulate()
         out << "CT: " << (current_time - process_time) << " sec" << '\n';
     }
 
-    // free the velocity set (all other variables are objets which free themselves)
-    delete set;
     bsp_end();
 }
 
 int main(int argc, char **argv)
 {
     ITERATIONS = askForIterations(argc, argv);
-    REPORT_PER_ITERATION = 1000;
+    REPORT_PER_ITERATION = 10;
     dx = 80;
     dy = 80;
 
