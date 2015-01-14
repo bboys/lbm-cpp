@@ -68,10 +68,7 @@ namespace Domains {
 
     double DomainInitializer::omega()
     {
-        double RE = 50;
-        double u_x = 0.25;
-        int d_x = 1; //d_domain_size[0];
-        return 1.0 / (3 * u_x * d_x / RE + 0.5);
+        return 1.0;
     }
 
     void DomainInitializer::createNodes()
