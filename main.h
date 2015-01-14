@@ -1,16 +1,17 @@
 #ifndef INCLUDED_MAIN
 #define INCLUDED_MAIN
+#include "config.h"
 /*
 // #define PARALLEL (TODO)
 #ifndef PARALLEL
     struct Messenger
     {
         double *source;
-        size_t p;
+        MY_SIZE_T p;
         double *dest;
     };
     // als dest naar een distriubion wijst, dan hebben we hier geen nodes nodig
-    communicate(Messenger *messengers, size_t totalMessengers);
+    communicate(Messenger *messengers, MY_SIZE_T totalMessengers);
 #endif
 */
 #include <iostream>
@@ -29,7 +30,7 @@
 
 #include "LBM/Simulation.h"
 
-std::string createFileName(size_t iteration, std::string setName, std::string domainName, std::vector<size_t> domainSize);
+std::string createFileName(MY_SIZE_T iteration, std::string setName, std::string domainName, std::vector<MY_SIZE_T> domainSize);
 
 int main(int argc, char **argv);
 

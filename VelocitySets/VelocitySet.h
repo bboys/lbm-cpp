@@ -1,6 +1,7 @@
 #ifndef INCLUDED_VELOCITY_SETS_VELOCITY_SET
 #define INCLUDED_VELOCITY_SETS_VELOCITY_SET
 
+#include "config.h"
 #include <cstring>
 #include <vector>
 
@@ -13,28 +14,28 @@
             double d_speed_of_sound_squared;
 
         public:
-            size_t const nDirections;
-            size_t const nDimensions;
+            MY_SIZE_T const nDirections;
+            MY_SIZE_T const nDimensions;
 
-            VelocitySet(size_t nDirections, size_t nDimensions);
+            VelocitySet(MY_SIZE_T nDirections, MY_SIZE_T nDimensions);
             virtual ~VelocitySet();
-            double weight(size_t);
-            std::vector<int> direction(size_t);
+            double weight(MY_SIZE_T);
+            std::vector<int> direction(MY_SIZE_T);
             double speedOfSoundSquared();
-            virtual size_t oppositeDirectionOf(size_t dir) = 0;
+            virtual MY_SIZE_T oppositeDirectionOf(MY_SIZE_T dir) = 0;
     };
 
-    inline double VelocitySet::weight(size_t idx)
+    inline double VelocitySet::weight(MY_SIZE_T idx)
     {
         return d_weights[idx];
     }
 
-    inline std::vector<int> VelocitySet::direction(size_t idx)
+    inline std::vector<int> VelocitySet::direction(MY_SIZE_T idx)
     {
         return d_directions[idx];
     }
 
-    // inline size_t VelocitySet::nDirections()
+    // inline MY_SIZE_T VelocitySet::nDirections()
     // {
     //     return d_directions.size();
     // }

@@ -1,6 +1,7 @@
 #ifndef INCLUDED_VELOCITY_SET_D2Q9
 #define INCLUDED_VELOCITY_SET_D2Q9
 
+#include "config.h"
 #include "VelocitySet.h"
 
 // namespace VelocitySets {
@@ -9,10 +10,10 @@
         public:
             D2Q9();
             ~D2Q9();
-            size_t oppositeDirectionOf(size_t dir) override;
+            MY_SIZE_T oppositeDirectionOf(MY_SIZE_T dir) override;
     };
 
-    inline size_t D2Q9::oppositeDirectionOf(size_t dir)
+    inline MY_SIZE_T D2Q9::oppositeDirectionOf(MY_SIZE_T dir)
     {
         switch (dir)
         {

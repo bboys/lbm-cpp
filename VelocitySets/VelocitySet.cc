@@ -1,7 +1,8 @@
 #include "VelocitySet.h"
+#include "config.h"
 
 // namespace VelocitySets {
-    VelocitySet::VelocitySet(size_t nDirections, size_t nDimensions)
+    VelocitySet::VelocitySet(MY_SIZE_T nDirections, MY_SIZE_T nDimensions)
     :
             nDirections(nDirections),
             nDimensions(nDimensions)
