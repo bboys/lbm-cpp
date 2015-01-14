@@ -130,7 +130,12 @@ void simulate()
 
     // Perform all iterations
     for (MY_SIZE_T iter = 0; iter < ITERATIONS; ++iter)
+    {
         sim.step();
+
+        if (iter % REPORT_PER_ITERATION == 0)
+            sim.report();
+    }
 
     // Create a timestamp
     bsp_sync();
