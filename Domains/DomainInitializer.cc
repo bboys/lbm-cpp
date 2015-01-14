@@ -22,7 +22,7 @@ namespace Domains {
     std::unique_ptr<Domain> DomainInitializer::domain()
     {
         // setting the tagsize such that we can send the hash idx of a message
-        size_t tag_size = sizeof(size_t);
+        MCBSP_BYTESIZE_TYPE tag_size = sizeof(size_t);
         bsp_set_tagsize(&tag_size);
         bsp_sync();
 
@@ -42,13 +42,13 @@ namespace Domains {
         // setup messengers (for the parallelisation of the code)
         bsp_sync();
         // get the destination from bsp and apply it to the appropriate messenger
-        unsigned int nmessages = 0;
-        size_t nbytes = 0;
+        MCBSP_NUMMSG_TYPE nmessages = 0;
+        MCBSP_BYTESIZE_TYPE nbytes = 0;
         bsp_qsize(&nmessages, &nbytes);
-        for (size_t n = 0; n < nmessages; ++n)
+        for (MCBSP_NUMMSG_TYPE n = 0; n < nmessages; ++n)
         {
             size_t idx; // the hashIdx of the current messenger
-            size_t status;
+            MCBSP_BYTESIZE_TYPE status;
             bsp_get_tag(&status,&idx);
 
             if (status > 0)

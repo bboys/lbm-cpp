@@ -12,7 +12,7 @@ namespace LBM {
         d_domain(initializer->domain())
     {
         // we'll send both the local idx and the direction which we we'll change
-        size_t tag_size = sizeof(size_t[2]);
+        MCBSP_BYTESIZE_TYPE tag_size = sizeof(size_t[2]);
         bsp_set_tagsize(&tag_size);
         bsp_sync();
     }
@@ -88,12 +88,13 @@ namespace LBM {
             bsp_send(messenger.d_p, messenger.d_tag, &messenger.d_src, sizeof(double));
         bsp_sync();
 
-        unsigned int nmessages = 0;
-        size_t nbytes = 0;
+        MCBSP_NUMMSG_TYPE nmessages = 0;
+        MCBSP_BYTESIZE_TYPE nbytes = 0;
         bsp_qsize(&nmessages, &nbytes);
-        for (size_t n = 0; n < nmessages; ++n)
+        for (MCBSP_NUMMSG_TYPE n = 0; n < nmessages; ++n)
         {
-            size_t i[2], status;
+            size_t i[2];
+            MCBSP_BYTESIZE_TYPE status;
             bsp_get_tag(&status,&i); // i[0] = idx, i[1] = dir
             if (status > 0)
             {
