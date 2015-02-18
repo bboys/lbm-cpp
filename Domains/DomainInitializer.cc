@@ -111,7 +111,7 @@ namespace Domains {
         }
     }
 
-    Node DomainInitializer::initializeNodeAt(std::vector<int> position)
+    Node DomainInitializer::initializeNodeAt(std::vector<int> &position)
     {
         MY_SIZE_T nDirections = d_set->nDirections;
         MY_SIZE_T nDimensions = d_set->nDimensions;
@@ -200,7 +200,7 @@ namespace Domains {
         bsp_send(p, &tag, &src, sizeof(double *));
     }
 
-    MY_SIZE_T DomainInitializer::processorOfNode(std::vector<int> position)
+    MY_SIZE_T DomainInitializer::processorOfNode(std::vector<int> &position)
     {
         // splitting vertically
         double p = static_cast<double>(d_total_processors * position[0]) / d_domain_size[0];
@@ -212,7 +212,7 @@ namespace Domains {
         // We don't need any post processors for this "dummy" domain
     }
 
-    bool DomainInitializer::isInDomain(std::vector<int> position)
+    bool DomainInitializer::isInDomain(std::vector<int> &position)
     {
         return true;
     }
@@ -220,7 +220,7 @@ namespace Domains {
     // Creates an hash index from a vector
     // example: given bounds [20, 30, 40], position: [4, 3, 5]
     // idx = 4 + 20 * 3 + 20 * 30 * 5
-    MY_SIZE_T DomainInitializer::hashIdxOf(std::vector<int> position, MY_SIZE_T direction)
+    MY_SIZE_T DomainInitializer::hashIdxOf(std::vector<int> &position, MY_SIZE_T direction)
     {
         if (position.size() != d_domain_size.size())
             throw std::string("Position is not compatible with domain size");
@@ -239,7 +239,7 @@ namespace Domains {
         return hashIdx;
     }
 
-    MY_SIZE_T DomainInitializer::idxOf(std::vector<int> position)
+    MY_SIZE_T DomainInitializer::idxOf(std::vector<int> &position)
     {
         MY_SIZE_T hashIdx = hashIdxOf(position);
         return d_map_to_index[hashIdx];
