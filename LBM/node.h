@@ -1,8 +1,6 @@
 #ifndef INCLUDED_LBM_NODE
 #define INCLUDED_LBM_NODE
 
-#include "../config.h"
-
 #include <cstring>
 #include "../VelocitySets/VelocitySet.h"
 
@@ -16,7 +14,7 @@ struct Distribution
 struct Node
 {
     Distribution *distributions;
-    MY_SIZE_T *position;
+    size_t *position;
 };
 
 double *equilibrium(VelocitySet *set, Node node);

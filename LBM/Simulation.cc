@@ -1,4 +1,3 @@
-#include "../config.h"
 #include "Simulation.h"
 #include "node.h"
 #include <iostream>
@@ -13,7 +12,7 @@ namespace LBM {
         d_domain(initializer->domain())
     {
         // we'll send both the local idx and the direction which we we'll change
-        MCBSP_BYTESIZE_TYPE tag_size = sizeof(MY_SIZE_T[2]);
+        MCBSP_BYTESIZE_TYPE tag_size = sizeof(size_t[2]);
         bsp_set_tagsize(&tag_size);
         bsp_sync();
     }
@@ -37,13 +36,13 @@ namespace LBM {
 
     void Simulation::stream(VelocitySet *set, std::vector<Node> &nodes)
     {
-        MY_SIZE_T nDirections = set->nDirections;
+        size_t nDirections = set->nDirections;
 
         // Stream each distribution to the neighbouring nodes
         // since neighbour is a pointer to a boolean we only have to assign a new value
         // to the neighbour
-        for (MY_SIZE_T idx = 0; idx < nodes.size(); ++idx)
-            for (MY_SIZE_T dir = 0; dir < nDirections; ++dir)
+        for (size_t idx = 0; idx < nodes.size(); ++idx)
+            for (size_t dir = 0; dir < nDirections; ++dir)
                 if (nodes[idx].distributions[dir].neighbour != nullptr)
                     *nodes[idx].distributions[dir].neighbour = nodes[idx].distributions[dir].value;
     }
@@ -53,9 +52,9 @@ namespace LBM {
         double omega = d_domain->omega;
         for (auto node : nodes)
         {
-            MY_SIZE_T nDirections = set->nDirections;
+            size_t nDirections = set->nDirections;
             // switch to the newly streamed distribution values
-            for (MY_SIZE_T dir = 0; dir < nDirections; ++dir)
+            for (size_t dir = 0; dir < nDirections; ++dir)
             {
                 node.distributions[dir].value = node.distributions[dir].nextValue;
                 node.distributions[dir].nextValue = -1;
@@ -63,7 +62,7 @@ namespace LBM {
 
             // apply BGK approximation
             auto node_equilibrium = equilibrium(set, node);
-            for (MY_SIZE_T dir = 0; dir < nDirections; ++dir)
+            for (size_t dir = 0; dir < nDirections; ++dir)
                 node.distributions[dir].value = node.distributions[dir].value -
                     omega * (node.distributions[dir].value - node_equilibrium[dir]);
 
@@ -73,7 +72,7 @@ namespace LBM {
 
     void Simulation::postStreamProcess()
     {
-        for (MY_SIZE_T idx = 0; idx < d_domain->post_processors.size(); ++idx)
+        for (size_t idx = 0; idx < d_domain->post_processors.size(); ++idx)
             d_domain->post_processors[idx]->process();
     }
 
@@ -94,7 +93,7 @@ namespace LBM {
         bsp_qsize(&nmessages, &nbytes);
         for (MCBSP_NUMMSG_TYPE n = 0; n < nmessages; ++n)
         {
-            MY_SIZE_T i[2];
+            size_t i[2];
             MCBSP_BYTESIZE_TYPE status;
             bsp_get_tag(&status,&i); // i[0] = idx, i[1] = dir
             if (status > 0)
@@ -109,8 +108,8 @@ namespace LBM {
 
     void Simulation::report()
     {
-        MY_SIZE_T total_p = bsp_nprocs();
-        MY_SIZE_T s = bsp_pid();
+        size_t total_p = bsp_nprocs();
+        size_t s = bsp_pid();
         double *densities = new double[total_p]();
         double current_density = 0;
         bsp_push_reg(densities,total_p * sizeof(double));
@@ -120,13 +119,13 @@ namespace LBM {
             current_density += density(d_domain->set, node);
 
         // send density to each processor
-        for (MY_SIZE_T t = 0; t < total_p; t++)
+        for (size_t t = 0; t < total_p; t++)
             bsp_put(t, &current_density, densities, s * sizeof(double), sizeof(double));
 
         bsp_sync();
         // now calculate the total density
         double total_density = 0;
-        for (MY_SIZE_T t = 0; t < total_p; t++)
+        for (size_t t = 0; t < total_p; t++)
             total_density += densities[t];
 
         bsp_pop_reg(densities);

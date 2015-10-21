@@ -1,9 +1,7 @@
 #include "Messenger.h"
 #include <iostream>
 
-#include "../config.h"
-
-Messenger create_messenger(MY_SIZE_T processor, MY_SIZE_T dir)
+Messenger create_messenger(size_t processor, size_t dir)
 {
     Messenger m;
     m.d_p = processor;
@@ -12,7 +10,7 @@ Messenger create_messenger(MY_SIZE_T processor, MY_SIZE_T dir)
     return m;
 }
 
-// Messenger::Messenger(MY_SIZE_T processor, MY_SIZE_T dir)
+// Messenger::Messenger(size_t processor, size_t dir)
 // :
 //     d_p(processor),
 //     d_local_idx(0),
@@ -24,28 +22,28 @@ Messenger create_messenger(MY_SIZE_T processor, MY_SIZE_T dir)
 // Messenger::~Messenger()
 // {}
 
-// MY_SIZE_T Messenger::processor() const
+// size_t Messenger::processor() const
 // {
 //     return d_p;
 // }
 
-// MY_SIZE_T Messenger::direction() const
+// size_t Messenger::direction() const
 // {
 //     return d_dir;
 // }
 
-// void Messenger::setLocalIdx(MY_SIZE_T idx)
+// void Messenger::setLocalIdx(size_t idx)
 // {
 //     d_local_idx = idx;
 //     d_tag[1] = idx;
 // }
 
-// MY_SIZE_T Messenger::localIdx()
+// size_t Messenger::localIdx()
 // {
 //     return d_local_idx;
 // }
 
-// MY_SIZE_T *Messenger::tag()
+// size_t *Messenger::tag()
 // {
 //     return d_tag;
 // }
