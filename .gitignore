@@ -1,5 +1,6 @@
 *.o
 *.d
-main
-test
-logs/
+bin/*
+lib/*
+logs/*
+build/*

@@ -1,35 +1,37 @@
-CXX = g++
-# CXXFLAGS = -Wall -std=c++11 -g
-# with -MMD creates .d files
-CXXFLAGS = -Wall -std=c++11 -MMD -g
-CXXINCL = -I../MulticoreBSP-for-C/include
-LINKER = $(CXX)
-LDFLAGS =
-LDLIBS = -L../MulticoreBSP-for-C/lib -lmcbsp1.2.0 -lpthread
+CC := g++
+# CC := clang --analyze # and comment out the linker last line for sanity
+SRCDIR    := src
+BUILDDIR  := build
+TARGETDIR := bin
+TARGET    := main
 
-TARGET = main
-SOURCES = main.cc $(wildcard **/*.cc)
-OBJECTS = $(SOURCES:.cc=.o)
-
-TEST_TARGET = test
-TEST_SOURCES = test.cc $(wildcard **/*.cc)
-TEST_OBJECTS = $(TEST_SOURCES:.cc=.o)
-
-DEPS = $(OBJECTS:.o=.d)
-ODIR = ./objects
-
-all: $(TARGET)
+# Compile all .cpp files in the src directory and put the object files in the build dir
+SRCEXT  := cpp
+SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
+CFLAGS  := -std=c++11 -Wall -g -MMD
+LIB     := -L lib/MulticoreBSP-for-C/lib -l mcbsp1.2.0 -l pthread
+INC     := -I include
 
 $(TARGET): $(OBJECTS)
-	$(LINKER) $(LDFLAGS) $(OBJECTS) $(LDLIBS) -o $@
+	@echo "Linking..."
+	$(CC) $^ -o $(TARGETDIR)/$(TARGET) $(LIB)
 
-$(TEST_TARGET): $(TEST_OBJECTS)
-	$(LINKER) $(LDFLAGS) $(TEST_OBJECTS) $(LDLIBS) -o $@
-
-%.o: %.cc
-	$(CXX) -c $(CXXFLAGS) $(CXXINCL) $< -o $@
+$(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 clean:
-	rm -f $(TARGET) $(OBJECTS) $(DEPS)
+	@echo "Cleaning...";
+	$(RM) -r $(BUILDDIR) $(TARGETDIR)/$(TARGET)
 
--include $(DEPS)
+# TODO: add tests
+# # Tests
+# tester:
+# 	$(CC) $(CFLAGS) test/tester.cpp $(INC) $(LIB) -o bin/tester
+
+# # Spikes
+# ticket:
+# 	$(CC) $(CFLAGS) spikes/ticket.cpp $(INC) $(LIB) -o bin/ticket
+
+.PHONY: clean
