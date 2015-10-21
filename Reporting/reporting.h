@@ -1,7 +1,7 @@
 #ifndef INCLUDED_REPORTING
 #define INCLUDED_REPORTING
 
-#include "config.h"
+#include "../config.h"
 
 #include <string>
 #include "../VelocitySets/VelocitySet.h"

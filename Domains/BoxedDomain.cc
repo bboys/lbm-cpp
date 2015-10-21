@@ -1,6 +1,6 @@
 #include "BoxedDomain.h"
 
-#include "config.h"
+#include "../config.h"
 #include "../LBM/parallel.h"
 
 

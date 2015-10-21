@@ -3,7 +3,7 @@
 
 #include "DomainInitializer.h"
 #include "../VelocitySets/d2q9.h"
-#include "config.h"
+#include "../config.h"
 
 namespace Domains {
     class LidDrivenCavityDomain : public DomainInitializer {

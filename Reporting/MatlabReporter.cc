@@ -1,5 +1,5 @@
 #include "MatlabReporter.h"
-#include "config.h"
+#include "../config.h"
 
 namespace Reporting {
 

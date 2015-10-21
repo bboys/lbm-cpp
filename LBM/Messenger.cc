@@ -1,7 +1,7 @@
 #include "Messenger.h"
 #include <iostream>
 
-#include "config.h"
+#include "../config.h"
 
 Messenger create_messenger(MY_SIZE_T processor, MY_SIZE_T dir)
 {

@@ -1,7 +1,7 @@
 #ifndef INCLUDED_VELOCITY_SETS_VELOCITY_SET
 #define INCLUDED_VELOCITY_SETS_VELOCITY_SET
 
-#include "config.h"
+#include "../config.h"
 #include <cstring>
 #include <vector>
 

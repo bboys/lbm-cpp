@@ -1,7 +1,7 @@
 #ifndef INCLUDED_LBM_NODE
 #define INCLUDED_LBM_NODE
 
-#include "config.h"
+#include "../config.h"
 
 #include <cstring>
 #include "../VelocitySets/VelocitySet.h"

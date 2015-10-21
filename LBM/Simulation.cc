@@ -1,4 +1,4 @@
-#include "config.h"
+#include "../config.h"
 #include "Simulation.h"
 #include "node.h"
 #include <iostream>

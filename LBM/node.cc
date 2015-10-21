@@ -1,6 +1,6 @@
 #include "node.h"
 
-#include "config.h"
+#include "../config.h"
 
 // Computes the total density on a node
 double density(VelocitySet *set, Node node)

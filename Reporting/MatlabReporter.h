@@ -1,7 +1,7 @@
 #ifndef INCLUDED_REPORTING_MATLAB_REPORTER
 #define INCLUDED_REPORTING_MATLAB_REPORTER
 
-#include "config.h"
+#include "../config.h"
 
 #include <iostream>
 #include <vector>

@@ -1,7 +1,7 @@
 #ifndef INCLUDED_LBM_MESSENGER
 #define INCLUDED_LBM_MESSENGER
 
-#include "config.h"
+#include "../config.h"
 #include <iostream>
 
 struct Messenger {

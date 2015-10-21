@@ -1,5 +1,5 @@
 #include "DomainInitializer.h"
-#include "config.h"
+#include "../config.h"
 #include <iostream>
 #include <sstream>
 #include <math.h>       /* ceil */

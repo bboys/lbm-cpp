@@ -1,5 +1,5 @@
 #include "LidDrivenCavity.h"
-#include "config.h"
+#include "../config.h"
 #include "../BoundaryConditions/ZouHeVelocityBoundaryCondition.h"
 
 

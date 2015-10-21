@@ -1,7 +1,7 @@
 #ifndef INCLUDED_DOMAINS_BOXED_DOMAIN
 #define INCLUDED_DOMAINS_BOXED_DOMAIN
 
-#include "config.h"
+#include "../config.h"
 
 #include "DomainInitializer.h"
 #include "../VelocitySets/d2q9.h"

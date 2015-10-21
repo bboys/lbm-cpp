@@ -1,7 +1,7 @@
 #ifndef INCLUDED_DOMAINS_DOMAIN_INITIALIZER
 #define INCLUDED_DOMAINS_DOMAIN_INITIALIZER
 
-#include "config.h"
+#include "../config.h"
 
 #include <vector>
 #include <unordered_map>

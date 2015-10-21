@@ -1,5 +1,5 @@
 #include "PointDomain.h"
-#include "config.h"
+#include "../config.h"
 
 namespace Domains {
     PointDomain::PointDomain(VelocitySet *set, std::vector<MY_SIZE_T> domainSize)

@@ -1,7 +1,7 @@
 #ifndef INCLUDED_VELOCITY_SET_D2Q9
 #define INCLUDED_VELOCITY_SET_D2Q9
 
-#include "config.h"
+#include "../config.h"
 #include "VelocitySet.h"
 
 // namespace VelocitySets {
