@@ -1,6 +1,10 @@
 *.o
-*.d
+*.
 bin/*
+!bin/.gitkeep
 lib/*
+!lib/.gitkeep
 logs/*
+!logs/.gitkeep
 build/*
+!build/.gitkeep
