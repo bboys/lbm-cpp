@@ -8,3 +8,4 @@ logs/*
 !logs/.gitkeep
 build/*
 !build/.gitkeep
+include/mcbsp*
