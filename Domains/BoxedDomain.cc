@@ -64,7 +64,7 @@ namespace Domains {
         bsp_send(p, &tag, &src, sizeof(double *));
     }
 
-    MY_SIZE_T BoxedDomain::processorOfNode(std::vector<int> position)
+    MY_SIZE_T BoxedDomain::processorOfNode(std::vector<int> &position)
     {
         // TODO!
         if (d_total_processors < 2)
@@ -76,7 +76,7 @@ namespace Domains {
             return 1;
     }
 
-    bool BoxedDomain::isInDomain(std::vector<int> position)
+    bool BoxedDomain::isInDomain(std::vector<int> &position)
     {
         return (
             position[0] >= 0 && position[0] < d_domain_size[0] &&

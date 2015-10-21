@@ -15,7 +15,7 @@ namespace Domains {
         return 1.0 / 0.6;
     }
 
-    Node PointDomain::initializeNodeAt(std::vector<int> position)
+    Node PointDomain::initializeNodeAt(std::vector<int> &position)
     {
         Node node = DomainInitializer::initializeNodeAt(position);
         if (
@@ -65,7 +65,7 @@ namespace Domains {
         }
     }
 
-    bool PointDomain::isInDomain(std::vector<int> position)
+    bool PointDomain::isInDomain(std::vector<int> &position)
     {
         return (
             position[0] >= 0 && position[0] < d_domain_size[0] &&

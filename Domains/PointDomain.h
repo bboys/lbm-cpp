@@ -14,9 +14,9 @@ namespace Domains {
             ~PointDomain();
 
         protected:
-            Node initializeNodeAt(std::vector<int> position) override;
+            Node initializeNodeAt(std::vector<int> &position) override;
             void connectNodeToNeighbours(MY_SIZE_T idx) override;
-            bool isInDomain(std::vector<int> position) override;
+            bool isInDomain(std::vector<int> &position) override;
             bool isBounceBack(std::vector<int> position);
             double omega() override;
     };

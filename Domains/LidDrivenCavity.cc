@@ -49,7 +49,7 @@ namespace Domains {
         }
     }
 
-    bool LidDrivenCavityDomain::isInDomain(std::vector<int> position)
+    bool LidDrivenCavityDomain::isInDomain(std::vector<int> &position)
     {
         // square domain
         return (
