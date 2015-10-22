@@ -8,13 +8,15 @@ TARGET    := main
 
 # Compile all .cpp files in the src directory and put the object files in the build dir
 SRCEXT  := cpp
+
+# All except main.cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT) -not -wholename src/main.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
+
+# All spec .cpp files
 SPECS   := $(shell find $(SPECDIR) -type f -name *.$(SRCEXT))
 SPEC_OBJECTS := $(patsubst $(SPECDIR)/%,$(BUILDDIR)/$(SPECDIR)/%,$(SPECS:.$(SRCEXT)=.o))
-# SPECS   := $(shell find $(SPECDIR) $(SRCDIR) -type f -name *.$(SRCEXT) -not -wholename src/main.$(SRCEXT))
-# SPEC_OBJECTS := $(patsubst $(SPECDIR)/%,$(BUILDDIR)/$(SPECS)/%,$(SPECS:.$(SRCEXT)=.o))
-# SPEC_OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SPEC_OBJECTS:.$(SRCEXT)=.o))
+
 CFLAGS  := -std=c++11 -g -MMD
 LIB     := -L lib/MulticoreBSP-for-C/lib -l mcbsp1.2.0 -l pthread
 INC     := -I include
