@@ -8,7 +8,7 @@
     class VelocitySet
     {
         protected:
-            std::vector<double> d_weights;
+            std::vector<double>           d_weights;
             std::vector<std::vector<int>> d_directions;
             double d_speed_of_sound_squared;
 
@@ -17,6 +17,7 @@
             size_t const nDimensions;
 
             VelocitySet(size_t nDirections, size_t nDimensions);
+            VelocitySet(std::vector<double> weights, std::vector<std::vector<int>> directions, double speed_of_sound_squared);
             virtual ~VelocitySet();
             double weight(size_t);
             std::vector<int> direction(size_t);

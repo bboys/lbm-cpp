@@ -8,7 +8,6 @@
     {
         public:
             D2Q9();
-            ~D2Q9();
             size_t oppositeDirectionOf(size_t dir) override;
     };
 
