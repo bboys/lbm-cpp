@@ -8,10 +8,10 @@
     {
         public:
             D2Q9();
-            size_t oppositeDirectionOf(size_t dir) override;
+            size_t oppositeDirectionOf(size_t dir) const override;
     };
 
-    inline size_t D2Q9::oppositeDirectionOf(size_t dir)
+    inline size_t D2Q9::oppositeDirectionOf(size_t dir) const
     {
         switch (dir)
         {

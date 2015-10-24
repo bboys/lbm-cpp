@@ -8,29 +8,28 @@
     class VelocitySet
     {
         protected:
-            std::vector<double>           d_weights;
-            std::vector<std::vector<int>> d_directions;
-            double d_speed_of_sound_squared;
+            std::vector<double> const           d_weights;
+            std::vector<std::vector<int>> const d_directions;
+            double const d_speed_of_sound_squared;
 
         public:
             size_t const nDirections;
             size_t const nDimensions;
 
-            VelocitySet(size_t nDirections, size_t nDimensions);
             VelocitySet(std::vector<double> weights, std::vector<std::vector<int>> directions, double speed_of_sound_squared);
-            virtual ~VelocitySet();
-            double weight(size_t);
-            std::vector<int> direction(size_t);
-            double speedOfSoundSquared();
-            virtual size_t oppositeDirectionOf(size_t dir) = 0;
+            virtual ~VelocitySet() = default;
+            double weight(size_t) const;
+            std::vector<int> direction(size_t) const;
+            double speedOfSoundSquared() const;
+            virtual size_t oppositeDirectionOf(size_t dir) const = 0;
     };
 
-    inline double VelocitySet::weight(size_t idx)
+    inline double VelocitySet::weight(size_t idx) const
     {
         return d_weights[idx];
     }
 
-    inline std::vector<int> VelocitySet::direction(size_t idx)
+    inline std::vector<int> VelocitySet::direction(size_t idx) const
     {
         return d_directions[idx];
     }
@@ -40,7 +39,7 @@
     //     return d_directions.size();
     // }
 
-    inline double VelocitySet::speedOfSoundSquared()
+    inline double VelocitySet::speedOfSoundSquared() const
     {
         return d_speed_of_sound_squared;
     }

@@ -1,11 +1,6 @@
 #include "VelocitySet.h"
 
 // namespace VelocitySets {
-    VelocitySet::VelocitySet(size_t nDirections, size_t nDimensions)
-    :
-            nDirections(nDirections),
-            nDimensions(nDimensions)
-    {}
 
     VelocitySet::VelocitySet(
         std::vector<double> weights,
@@ -20,7 +15,4 @@
         nDimensions(d_directions[0].size())
     {
     }
-
-    VelocitySet::~VelocitySet()
-    {}
 // }
