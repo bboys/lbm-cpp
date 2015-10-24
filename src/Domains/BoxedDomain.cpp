@@ -2,13 +2,6 @@
 #include "../LBM/parallel.h"
 
 namespace Domains {
-    BoxedDomain::BoxedDomain(VelocitySet *set, std::vector<size_t> domainSize, size_t p, size_t totalProcessors)
-    :
-        DomainInitializer(set, domainSize, p, totalProcessors)
-    {}
-
-    BoxedDomain::~BoxedDomain()
-    {}
 
     void BoxedDomain::connectNodeToNeighbours(size_t idx)
     {

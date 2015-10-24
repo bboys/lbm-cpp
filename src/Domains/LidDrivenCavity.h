@@ -7,10 +7,6 @@
 namespace Domains {
     class LidDrivenCavityDomain : public DomainInitializer {
 
-        public:
-            LidDrivenCavityDomain(VelocitySet *set, std::vector<size_t> domainSize);
-            ~LidDrivenCavityDomain();
-
         protected:
             void connectNodeToNeighbours(size_t idx) override;
 

@@ -17,8 +17,8 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 SPECS   := $(shell find $(SPECDIR) -type f -name *.$(SRCEXT))
 SPEC_OBJECTS := $(patsubst $(SPECDIR)/%,$(BUILDDIR)/$(SPECDIR)/%,$(SPECS:.$(SRCEXT)=.o))
 
-CFLAGS  := -std=c++11 -g -MMD
-LIB     := -L lib/MulticoreBSP-for-C/lib -l mcbsp1.2.0 -l pthread
+CFLAGS  := -std=c++14 -g -MMD
+LIB     := -L lib/MulticoreBSP-for-C/lib -l mcbsp1.2.0 -l pthread -l bobcat
 INC     := -I include
 
 all: lbm

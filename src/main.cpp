@@ -13,7 +13,10 @@
 #include "LBM/node.h"
 #include "LBM/parallel.h"
 
+#include <memory>
+
 using namespace Domains;
+using std::make_unique;
 
 // Global variables
 size_t dx = 80;
@@ -45,17 +48,16 @@ void simulate()
     size_t p = bsp_nprocs();
     size_t s = bsp_pid();
 
+    std::vector<size_t> domainSize{dx, dy};
+
     if (s == 0)
-        logSimulationData({dx, dy});
+        logSimulationData(domainSize);
 
     bsp_sync();
     double initialization_time = bsp_time();
-    // Initialize a velocity set and a domain
-    D2Q9 set;
-    auto domainSize = {dx, dy};
 
-    DomainInitializer initializer(&set, domainSize, s, p);
-    LBM::Simulation sim(&initializer);
+    D2Q9 set;
+    LBM::Simulation sim(make_unique<DomainInitializer>(&set, domainSize, s, p));
 
     // Log initialization time and prepare computation time
     bsp_sync();
@@ -68,14 +70,7 @@ void simulate()
     }
     double process_time = bsp_time();
 
-    // Perform all iterations
-    for (size_t iter = 0; iter < ITERATIONS; ++iter)
-    {
-        sim.step();
-
-        if (iter % REPORT_PER_ITERATION == 0)
-            sim.report();
-    }
+    run_simulation(sim);
 
     // Create a timestamp
     bsp_sync();
@@ -88,6 +83,21 @@ void simulate()
     }
 
     bsp_end();
+}
+
+/**
+ * Run ITERATIONS step and periodically report the current state of the simulation
+ * @param sim
+ */
+void run_simulation(LBM::Simulation &sim)
+{
+    for (size_t iter = 0; iter < ITERATIONS; ++iter)
+    {
+        sim.step();
+
+        if (iter % REPORT_PER_ITERATION == 0)
+            sim.report();
+    }
 }
 
 size_t askForIterations(int argc, char** argv)

@@ -8,6 +8,7 @@
 
 int main(int argc, char **argv);
 void simulate();
+void run_simulation(LBM::Simulation &sim);
 
 // Setup functions
 size_t askForIterations(int argc, char** argv);
@@ -20,6 +21,5 @@ void showVector(std::vector<size_t> vector, std::ofstream &out);
 // Reporting functions
 void createMatlabReport(LBM::Simulation &sim, size_t iter, std::vector<size_t> domainSize);
 std::string createFileName(size_t iteration, std::string setName, std::string domainName, std::vector<size_t> domainSize);
-
 
 #endif

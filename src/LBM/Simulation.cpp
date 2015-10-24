@@ -7,7 +7,8 @@
 #include "../LBM/parallel.h"
 
 namespace LBM {
-    Simulation::Simulation(Domains::DomainInitializer *initializer)
+
+    Simulation::Simulation(Initializer_Ptr initializer)
     :
         d_domain(initializer->domain())
     {

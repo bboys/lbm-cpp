@@ -1,6 +1,8 @@
 #ifndef INCLUDED_LBM_SIMULATION
 #define INCLUDED_LBM_SIMULATION
 
+#include <memory>
+
 #include "../Domains/DomainInitializer.h"
 #include "../VelocitySets/VelocitySet.h"
 #include "node.h"
@@ -12,10 +14,12 @@
 namespace LBM {
     class Simulation
     {
+        using Initializer_Ptr = std::unique_ptr<Domains::DomainInitializer>;
+
         std::unique_ptr<Domain> d_domain;
 
         public:
-            Simulation(Domains::DomainInitializer *initializer);
+            Simulation(Initializer_Ptr initializer);
             ~Simulation();
             void step();
             void report(::Reporting::MatlabReporter reporter);

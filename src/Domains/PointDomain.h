@@ -7,10 +7,6 @@
 namespace Domains {
     class PointDomain : public DomainInitializer {
 
-        public:
-            PointDomain(VelocitySet *set, std::vector<size_t> domainSize);
-            ~PointDomain();
-
         protected:
             Node initializeNodeAt(std::vector<int> &position) override;
             void connectNodeToNeighbours(size_t idx) override;

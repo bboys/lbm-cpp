@@ -1,13 +1,6 @@
 #include "PointDomain.h"
 
 namespace Domains {
-    PointDomain::PointDomain(VelocitySet *set, std::vector<size_t> domainSize)
-    :
-        DomainInitializer(set, domainSize)
-    {}
-
-    PointDomain::~PointDomain()
-    {}
 
     double PointDomain::omega()
     {

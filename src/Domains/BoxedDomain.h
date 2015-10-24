@@ -7,10 +7,6 @@
 namespace Domains {
     class BoxedDomain : public DomainInitializer {
 
-        public:
-            BoxedDomain(VelocitySet *set, std::vector<size_t> domainSize, size_t p = 0, size_t totalProcessors = 1);
-            ~BoxedDomain();
-
         protected:
 
             void connectNodeToNeighbours(size_t idx) override;

@@ -5,13 +5,6 @@
 using namespace BoundaryConditions;
 
 namespace Domains {
-    LidDrivenCavityDomain::LidDrivenCavityDomain(VelocitySet *set, std::vector<size_t> domainSize)
-    :
-        DomainInitializer(set, domainSize)
-    {}
-
-    LidDrivenCavityDomain::~LidDrivenCavityDomain()
-    {}
 
     void LidDrivenCavityDomain::connectNodeToNeighbours(size_t idx)
     {
