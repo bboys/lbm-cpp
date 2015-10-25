@@ -1,5 +1,5 @@
 #include "BoxedDomain.h"
-#include "../LBM/parallel.h"
+#include "../LBM/parallel_bsp.h"
 
 namespace Domains {
 

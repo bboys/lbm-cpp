@@ -11,7 +11,7 @@
 #include "VelocitySets/d2q9.h"
 
 #include "LBM/node.h"
-#include "LBM/parallel.h"
+#include "LBM/parallel_bsp.h"
 
 #include <memory>
 

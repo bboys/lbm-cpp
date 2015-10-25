@@ -4,7 +4,7 @@
 #include <math.h>       /* ceil */
 
 
-#include "../LBM/parallel.h"
+#include "../LBM/parallel_bsp.h"
 
 namespace Domains {
 
@@ -48,7 +48,7 @@ namespace Domains {
         for (MCBSP_NUMMSG_TYPE n = 0; n < nmessages; ++n)
         {
             size_t idx; // the hashIdx of the current messenger
-            MCBSP_BYTESIZE_TYPE status;
+            MCBSP_BYTESIZE_TYPE status = 0;
             bsp_get_tag(&status,&idx);
 
             if (status > 0)

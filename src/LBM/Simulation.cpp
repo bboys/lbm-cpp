@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "../LBM/parallel.h"
+#include "../LBM/parallel_bsp.h"
 
 namespace LBM {
 
