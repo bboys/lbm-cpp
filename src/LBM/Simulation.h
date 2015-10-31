@@ -20,7 +20,9 @@ namespace LBM {
 
         public:
             Simulation(Initializer_Ptr initializer);
+            Simulation(std::unique_ptr<Domain> domain);
             ~Simulation();
+
             void step();
             void report(::Reporting::MatlabReporter reporter);
             void report();

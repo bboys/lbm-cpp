@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iostream>
 #include <sstream>
+#include <memory>
 
 #include "../LBM/parallel_bsp.h"
 
@@ -11,12 +12,12 @@ namespace LBM {
     Simulation::Simulation(Initializer_Ptr initializer)
     :
         d_domain(initializer->domain())
-    {
-        // we'll send both the local idx and the direction which we we'll change
-        MCBSP_BYTESIZE_TYPE tag_size = sizeof(size_t[2]);
-        bsp_set_tagsize(&tag_size);
-        bsp_sync();
-    }
+    {}
+
+    Simulation::Simulation(std::unique_ptr<Domain> domain)
+    :
+        d_domain(std::move(domain))
+    {}
 
     Simulation::~Simulation()
     {
@@ -48,6 +49,37 @@ namespace LBM {
                     *nodes[idx].distributions[dir].neighbour = nodes[idx].distributions[dir].value;
     }
 
+    void Simulation::communicate(std::vector<Messenger> messengers)
+    {
+        for (auto messenger : messengers)
+            bsp_send(messenger.d_p, messenger.d_tag, &messenger.d_src, sizeof(double));
+        bsp_sync();
+
+        MCBSP_NUMMSG_TYPE nmessages = 0;
+        MCBSP_BYTESIZE_TYPE nbytes = 0;
+        bsp_qsize(&nmessages, &nbytes);
+        for (MCBSP_NUMMSG_TYPE n = 0; n < nmessages; ++n)
+        {
+            size_t i[2];
+            MCBSP_BYTESIZE_TYPE status;
+            bsp_get_tag(&status,&i); // i[0] = idx, i[1] = dir
+            if (status > 0)
+            {
+                double distribution = 0;
+                bsp_move(&distribution, sizeof(double));
+                d_domain->nodes[i[0]].distributions[i[1]].nextValue = distribution;
+            }
+        }
+        // bsp_sync();
+    }
+
+    void Simulation::postStreamProcess()
+    {
+        for (size_t idx = 0; idx < d_domain->post_processors.size(); ++idx)
+            d_domain->post_processors[idx]->process();
+    }
+
+
     void Simulation::collission(VelocitySet *set, std::vector<Node> &nodes)
     {
         double omega = d_domain->omega;
@@ -71,40 +103,9 @@ namespace LBM {
         }
     }
 
-    void Simulation::postStreamProcess()
-    {
-        for (size_t idx = 0; idx < d_domain->post_processors.size(); ++idx)
-            d_domain->post_processors[idx]->process();
-    }
-
-
     void Simulation::report(::Reporting::MatlabReporter reporter)
     {
         // reporter.reportOnTimeStep(d_domain->set, d_domain->nodes);
-    }
-
-    void Simulation::communicate(std::vector<Messenger> messengers)
-    {
-        for (auto messenger : messengers)
-            bsp_send(messenger.d_p, messenger.d_tag, &messenger.d_src, sizeof(double));
-        bsp_sync();
-
-        MCBSP_NUMMSG_TYPE nmessages = 0;
-        MCBSP_BYTESIZE_TYPE nbytes = 0;
-        bsp_qsize(&nmessages, &nbytes);
-        for (MCBSP_NUMMSG_TYPE n = 0; n < nmessages; ++n)
-        {
-            size_t i[2];
-            MCBSP_BYTESIZE_TYPE status;
-            bsp_get_tag(&status,&i); // i[0] = idx, i[1] = dir
-            if (status > 0)
-            {
-                double distribution = 0;
-                bsp_move(&distribution, sizeof(double));
-                d_domain->nodes[i[0]].distributions[i[1]].nextValue = distribution;
-            }
-        }
-        // bsp_sync();
     }
 
     void Simulation::report()
