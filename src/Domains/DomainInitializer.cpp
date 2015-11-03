@@ -4,7 +4,7 @@
 #include <math.h>       /* ceil */
 
 
-#include "../LBM/parallel.h"
+#include "../LBM/parallel_bsp.h"
 
 namespace Domains {
 
@@ -16,16 +16,8 @@ namespace Domains {
         d_domain_size(domainSize)
     {}
 
-    DomainInitializer::~DomainInitializer()
-    {}
-
     std::unique_ptr<Domain> DomainInitializer::domain()
     {
-        // setting the tagsize such that we can send the hash idx of a message
-        MCBSP_BYTESIZE_TYPE tag_size = sizeof(size_t);
-        bsp_set_tagsize(&tag_size);
-        bsp_sync();
-
         createNodes();
 
         std::unique_ptr<Domain> domain(new Domain);
@@ -38,29 +30,6 @@ namespace Domains {
 
         domain->set    = d_set;
         domain->omega = omega();
-
-        // setup messengers (for the parallelisation of the code)
-        bsp_sync();
-        // get the destination from bsp and apply it to the appropriate messenger
-        MCBSP_NUMMSG_TYPE nmessages = 0;
-        MCBSP_BYTESIZE_TYPE nbytes = 0;
-        bsp_qsize(&nmessages, &nbytes);
-        for (MCBSP_NUMMSG_TYPE n = 0; n < nmessages; ++n)
-        {
-            size_t idx; // the hashIdx of the current messenger
-            MCBSP_BYTESIZE_TYPE status;
-            bsp_get_tag(&status,&idx);
-
-            if (status > 0)
-            {
-                size_t localIdx = 0;
-                bsp_move(&localIdx, status);
-                d_messengers[d_map_to_messenger[idx]].d_tag[0] = localIdx;
-            }
-            else
-                throw "Couldn't move the local idx during initialization phase.";
-        }
-
         domain->messengers = std::move(d_messengers);
 
         return domain;
@@ -100,6 +69,13 @@ namespace Domains {
             }
         }
 
+        // Connecting the nodes to their neighbours and set up the messengers
+
+        // setting the tagsize such that we can send the hash idx of a message
+        MCBSP_BYTESIZE_TYPE tag_size = sizeof(size_t);
+        bsp_set_tagsize(&tag_size);
+        bsp_sync();
+
         for (size_t idx = 0; idx < d_nodes.size(); ++idx)
             connectNodeToNeighbours(idx);
 
@@ -109,6 +85,8 @@ namespace Domains {
             size_t node_idx = d_messengers[idx].d_tag[0];
             d_nodes[node_idx].distributions[d_messengers[idx].d_tag[1]].neighbour = &d_messengers[idx].d_src;
         }
+
+        retrieveMessengers();
     }
 
     Node DomainInitializer::initializeNodeAt(std::vector<int> &position)
@@ -211,6 +189,31 @@ namespace Domains {
     void DomainInitializer::createPostProcessors(std::vector<Node> &nodes)
     {
         // We don't need any post processors for this "dummy" domain
+    }
+
+    void DomainInitializer::retrieveMessengers()
+    {
+        // setup messengers (for the parallelisation of the code)
+        bsp_sync();
+        // get the destination from bsp and apply it to the appropriate messenger
+        MCBSP_NUMMSG_TYPE nmessages = 0;
+        MCBSP_BYTESIZE_TYPE nbytes = 0;
+        bsp_qsize(&nmessages, &nbytes);
+        for (MCBSP_NUMMSG_TYPE n = 0; n < nmessages; ++n)
+        {
+            size_t idx; // the hashIdx of the current messenger
+            MCBSP_BYTESIZE_TYPE status = 0;
+            bsp_get_tag(&status,&idx);
+
+            if (status > 0)
+            {
+                size_t localIdx = 0;
+                bsp_move(&localIdx, status);
+                d_messengers[d_map_to_messenger[idx]].d_tag[0] = localIdx;
+            }
+            else
+                throw "Couldn't move the local idx during initialization phase.";
+        }
     }
 
     bool DomainInitializer::isInDomain(std::vector<int> &position)

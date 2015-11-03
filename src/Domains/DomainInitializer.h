@@ -34,7 +34,7 @@ namespace Domains {
 
         public:
             DomainInitializer(VelocitySet *set, std::vector<size_t> domainSize, size_t p = 0, size_t totalProcessors = 1);
-            virtual ~DomainInitializer();
+            virtual ~DomainInitializer() = default;
             std::unique_ptr<Domain> domain();
 
         protected:
@@ -46,6 +46,7 @@ namespace Domains {
             virtual bool isInDomain(std::vector<int> &position);
 
             virtual void createPostProcessors(std::vector<Node> &nodes);
+            virtual void retrieveMessengers();
 
             virtual double omega();
 
