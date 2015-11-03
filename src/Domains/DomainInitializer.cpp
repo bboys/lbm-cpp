@@ -18,11 +18,6 @@ namespace Domains {
 
     std::unique_ptr<Domain> DomainInitializer::domain()
     {
-        // setting the tagsize such that we can send the hash idx of a message
-        MCBSP_BYTESIZE_TYPE tag_size = sizeof(size_t);
-        bsp_set_tagsize(&tag_size);
-        bsp_sync();
-
         createNodes();
 
         std::unique_ptr<Domain> domain(new Domain);
@@ -35,8 +30,6 @@ namespace Domains {
 
         domain->set    = d_set;
         domain->omega = omega();
-
-        retrieveMessengers();
         domain->messengers = std::move(d_messengers);
 
         return domain;
@@ -76,6 +69,13 @@ namespace Domains {
             }
         }
 
+        // Connecting the nodes to their neighbours and set up the messengers
+
+        // setting the tagsize such that we can send the hash idx of a message
+        MCBSP_BYTESIZE_TYPE tag_size = sizeof(size_t);
+        bsp_set_tagsize(&tag_size);
+        bsp_sync();
+
         for (size_t idx = 0; idx < d_nodes.size(); ++idx)
             connectNodeToNeighbours(idx);
 
@@ -85,6 +85,8 @@ namespace Domains {
             size_t node_idx = d_messengers[idx].d_tag[0];
             d_nodes[node_idx].distributions[d_messengers[idx].d_tag[1]].neighbour = &d_messengers[idx].d_src;
         }
+
+        retrieveMessengers();
     }
 
     Node DomainInitializer::initializeNodeAt(std::vector<int> &position)

@@ -45,10 +45,5 @@ size_t askForProcessors(int argc, char** argv)
         std::cin >> P;
     }
 
-    if (P > bsp_nprocs())
-    {
-        std::cout << "Sorry, not enough processors available." << std::endl;
-        exit(0);
-    }
     return P;
 }

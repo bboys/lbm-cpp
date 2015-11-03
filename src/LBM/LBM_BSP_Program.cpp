@@ -24,9 +24,8 @@ void LBM_BSP_Program::spmd() {
     p = bsp_nprocs();
     s = bsp_pid();
 
-    auto sim = setup_simulation();
-    run_simulation(sim);
-    delete sim;
+    std::unique_ptr<LBM::Simulation> sim(setup_simulation());
+    run_simulation(sim.get());
 }
 
 

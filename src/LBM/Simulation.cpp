@@ -1,11 +1,6 @@
 #include "Simulation.h"
 #include "node.h"
-#include <iostream>
-#include <iostream>
-#include <sstream>
 #include <memory>
-
-#include "../LBM/parallel_bsp.h"
 
 namespace LBM {
 
@@ -49,36 +44,11 @@ namespace LBM {
                     *nodes[idx].distributions[dir].neighbour = nodes[idx].distributions[dir].value;
     }
 
-    void Simulation::communicate(std::vector<Messenger> messengers)
-    {
-        for (auto messenger : messengers)
-            bsp_send(messenger.d_p, messenger.d_tag, &messenger.d_src, sizeof(double));
-        bsp_sync();
-
-        MCBSP_NUMMSG_TYPE nmessages = 0;
-        MCBSP_BYTESIZE_TYPE nbytes = 0;
-        bsp_qsize(&nmessages, &nbytes);
-        for (MCBSP_NUMMSG_TYPE n = 0; n < nmessages; ++n)
-        {
-            size_t i[2];
-            MCBSP_BYTESIZE_TYPE status;
-            bsp_get_tag(&status,&i); // i[0] = idx, i[1] = dir
-            if (status > 0)
-            {
-                double distribution = 0;
-                bsp_move(&distribution, sizeof(double));
-                d_domain->nodes[i[0]].distributions[i[1]].nextValue = distribution;
-            }
-        }
-        // bsp_sync();
-    }
-
     void Simulation::postStreamProcess()
     {
         for (size_t idx = 0; idx < d_domain->post_processors.size(); ++idx)
             d_domain->post_processors[idx]->process();
     }
-
 
     void Simulation::collission(VelocitySet *set, std::vector<Node> &nodes)
     {
@@ -102,40 +72,4 @@ namespace LBM {
             delete[] node_equilibrium;
         }
     }
-
-    void Simulation::report(::Reporting::MatlabReporter reporter)
-    {
-        // reporter.reportOnTimeStep(d_domain->set, d_domain->nodes);
-    }
-
-    void Simulation::report()
-    {
-        size_t total_p = bsp_nprocs();
-        size_t s = bsp_pid();
-        double *densities = new double[total_p]();
-        double current_density = 0;
-        bsp_push_reg(densities,total_p * sizeof(double));
-        bsp_sync();
-
-        for (auto node : d_domain->nodes)
-            current_density += density(d_domain->set, node);
-
-        // send density to each processor
-        for (size_t t = 0; t < total_p; t++)
-            bsp_put(t, &current_density, densities, s * sizeof(double), sizeof(double));
-
-        bsp_sync();
-        // now calculate the total density
-        double total_density = 0;
-        for (size_t t = 0; t < total_p; t++)
-            total_density += densities[t];
-
-        bsp_pop_reg(densities);
-
-        if (s == 0)
-            std::cout << "Total density: " << total_density << '\n';
-
-        delete[] densities;
-    }
-
 }
